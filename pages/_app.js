@@ -1,16 +1,12 @@
 import React, {useState} from "react";
 import Palette from "../styles/GlobalPalette";
-import {createTheme, CssBaseline, ThemeProvider, useTheme} from "@mui/material";
-import {grey} from "@mui/material/colors";
+import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
+import {SessionProvider} from "next-auth/react";
 
-const ColorModeContext = React.createContext({toggleColorMode: () => {}});
-
-function MyApp({Component, pageProps}) {
+function MyApp({Component, pageProps:{session,...pageProps}}) {
 
     const [darkState, setDarkState] = useState(false);
     const paletteType = darkState ? "dark" : "light";
-    const primaryColor = darkState ? Palette.primaryColor.dark : Palette.primaryColor.light;
-    const secondaryColor = darkState ? Palette.secondaryColor.dark : Palette.secondaryColor.light;
 
 
     const theme = createTheme({
@@ -51,10 +47,12 @@ function MyApp({Component, pageProps}) {
     });
 
     return (
+        <SessionProvider session={session}>
         <ThemeProvider theme={theme}>
             <CssBaseline/>
             <Component {...pageProps} darkState={darkState}/>
         </ThemeProvider>
+        </SessionProvider>
     );
 }
 
