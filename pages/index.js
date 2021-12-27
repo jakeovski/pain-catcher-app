@@ -6,6 +6,7 @@ import Home from '../components/Home';
 
 //TODO: Add Footer with version number
 //TODO: Comment the Component
+//TODO: For each request add the finally call
 const Index = ({darkState}) => {
 
     const {status} = useSession();

@@ -46,7 +46,6 @@ const Login = ({darkState}) => {
      * Handles the form submit actions
      * @param e - Event
      * @returns {Promise<void>}
-     * TODO: Add Forgot Password Functionality
      */
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -76,7 +75,24 @@ const Login = ({darkState}) => {
                 //Stop loading and show the appropriate message (Success/ Error)
                 setShowLoading(false);
                 setErrorMessage(data);
+                switchRegister();
             }
+        }else if (isForgot) {
+            setShowLoading(true);
+            const res = await fetch('/api/email', {
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                body: JSON.stringify({
+                    email:formData.email
+                })
+            });
+
+            //Await response
+            const data = await res.json();
+            setShowLoading(false);
+            setErrorMessage(data);
         }else {
             //If it is nothing of the above, means it is a sign in operation
             setShowLoading(true);
@@ -201,7 +217,7 @@ const Login = ({darkState}) => {
                             />
                         }
                         <Typography variant="h5" padding={2}>
-                            {isRegister ? "Register" : "Sign In"}
+                            {isRegister ? "Register" : isForgot ? "Reset Password" : "Sign In"}
                         </Typography>
                         {errorMessage.code &&
                             <Alert
