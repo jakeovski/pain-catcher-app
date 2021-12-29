@@ -3,26 +3,26 @@
 const Palette = {
     primaryColor:{
         light:{
-            main:"#7868E6",
-            dark:"#5558ea",
-            light:'#FF0000',
+            main:"#4F7CAC",
+            dark:"#87A878",
+            light:'#F95B3D',
         },
         dark:{
-            main:"#B8B5FF",
-            dark:"#fff",
-            light:'#FF0000'
+            main:"#B084CC",
+            dark:"#D65780",
+            light:'#E7E7E7'
         }
     },
     secondaryColor:{
         light:{
-            main:"#B8B5FF",
-            dark:'#FF0000',
-            light:'#FF0000'
+            main:"#F95B3D",
+            dark:'#F95B3D',
+            light:'#F95B3D'
         },
         dark: {
-            main:"#7868E6",
-            dark:'#FF0000',
-            light:'#FF0000'
+            main:"#E7E7E7",
+            dark:'#E7E7E7',
+            light:'#E7E7E7'
         }
     }
 }

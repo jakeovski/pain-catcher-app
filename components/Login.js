@@ -207,16 +207,16 @@ const Login = ({darkState}) => {
                         {darkState ?
                             <Image
                             src="/darkLogo.svg"
-                            height="150vh" width="320vw"
+                            height="100vh" width="360vw"
                             alt="PainCatcher Dark Logo"
                             />
                             :
                             <Image src="/lightLogo.svg"
-                            height="150vh" width="320vw"
+                            height="120vh" width="200vw"
                                    alt="PainCatcher Light Logo"
                             />
                         }
-                        <Typography variant="h5" padding={2}>
+                        <Typography variant="h5" padding={1}>
                             {isRegister ? "Register" : isForgot ? "Reset Password" : "Sign In"}
                         </Typography>
                         {errorMessage.code &&

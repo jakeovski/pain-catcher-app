@@ -1,9 +1,10 @@
 import React, {useEffect} from "react";
-import {signOut, useSession} from "next-auth/react";
+import {useSession} from "next-auth/react";
 import {useRouter} from "next/router";
+import Header from "./Header";
+import {Container} from "@mui/material";
 
-
-const Home = () => {
+const Home = ({darkState}) => {
     const {data:session} = useSession();
     const router = useRouter();
     useEffect(() => {
@@ -13,10 +14,9 @@ const Home = () => {
     },[router, session]);
 
     return(
-        <div>
-            <h1>Hello, You are logged in! Congratulations!</h1>
-            <button onClick={signOut}>SignOut</button>
-        </div>
+        <Container maxWidth="xl">
+            <Header darkState={darkState} session={session}/>
+        </Container>
     );
 }
 
