@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Connection from "../../../config/dbConnection";
 import Diary from "../../../models/Diary";
 import {DateTime} from "luxon";
@@ -36,8 +35,6 @@ const add = async(req,res) => {
             type:'error',
             message:'Error Creating New Diary'
         })
-    }finally {
-        await mongoose.connection.close();
     }
 }
 

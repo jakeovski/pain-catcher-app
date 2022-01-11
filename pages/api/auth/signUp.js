@@ -1,7 +1,6 @@
 import {hash} from 'bcrypt';
 import Connection from "../../../config/dbConnection";
 import User from "../../../models/User";
-import mongoose from "mongoose";
 
 const register = async (req,res) =>{
     try {
@@ -35,8 +34,6 @@ const register = async (req,res) =>{
     }catch (error) {
         console.log(error);
         res.status(422).json({code:'422',type:'error',message:'An error occurred during registration'})
-    }finally {
-        await mongoose.connection.close();
     }
 }
 

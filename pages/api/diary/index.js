@@ -1,6 +1,5 @@
 import {getSession} from "next-auth/react";
 import Connection from "../../../config/dbConnection";
-import mongoose from "mongoose";
 import Diary from "../../../models/Diary";
 
 
@@ -11,7 +10,6 @@ const getDiaries = async(req,res) => {
         await Connection();
 
         const diaryData = await Diary.find({userId:session.user.id});
-        console.log(diaryData);
         return res.status(200).json({
             data:diaryData,
             type:'',
@@ -25,11 +23,7 @@ const getDiaries = async(req,res) => {
             type:'error',
             message:'Error while retrieving diaries'
         })
-    }finally {
-       await mongoose.connection.close();
     }
-
-
 }
 
 export default getDiaries;
