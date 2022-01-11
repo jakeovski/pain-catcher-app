@@ -1,8 +1,9 @@
-import React, {useState} from "react";
-import {signIn} from "next-auth/react";
+import React, {useEffect, useState} from "react";
+import {signIn, useSession} from "next-auth/react";
 import {Alert, Button, Container, Grid, LinearProgress, Paper, Typography} from "@mui/material";
 import Input from "../helper/Input";
 import Image from "next/image";
+import {useRouter} from "next/router";
 
 /**
  * Component which represents the login screen
@@ -13,6 +14,7 @@ import Image from "next/image";
  * @constructor
  */
 const Login = ({darkState}) => {
+    const router = useRouter();
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -30,6 +32,15 @@ const Login = ({darkState}) => {
         type:'',
         message:'',
     })
+
+    const {data: session} = useSession();
+
+    useEffect(() => {
+        if(session){
+            router.push('/');
+        }
+    }, [router, session]);
+
 
     /**
      * Resets the state of the error Message object
@@ -110,6 +121,8 @@ const Login = ({darkState}) => {
                     type:'error',
                     message: status.error
                 });
+            }else {
+                router.push('/home');
             }
         }
     }

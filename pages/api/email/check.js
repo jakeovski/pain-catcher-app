@@ -6,12 +6,9 @@ import {DateTime} from "luxon";
 
 /**
  * Performs a check whether the parameters in the link are valid
- * @param req
- * @param res
  * @returns {Promise<*>}
  */
-const check = async(req,res) => {
-    const {email,token} = req.body;
+const check = async(email,token) => {
 
     //Check whether the user from the url exists
     await Connection();
@@ -21,10 +18,10 @@ const check = async(req,res) => {
 
     //If no user found return an error
     if (!user) {
-        return res.status(401).json({
+        return {
             error:true,
             message:'Invalid URL'
-        });
+        };
     }
 
     //Check whether the reset token exists in the db
@@ -34,10 +31,10 @@ const check = async(req,res) => {
 
     //If no reset token return an error
     if (!resetToken) {
-        return res.status(401).json({
+        return {
             error:true,
             message:'Invalid URL'
-        })
+        };
     }
 
     //Check whether the hashes match between the tokens
@@ -45,10 +42,10 @@ const check = async(req,res) => {
 
     //If they do not match return an error
     if (!checkToken) {
-        return res.status(401).json({
+        return {
            error:true,
            message:'Invalid URL'
-        });
+        };
     }
 
     //Check if the token has expired
@@ -58,19 +55,18 @@ const check = async(req,res) => {
             userId:resetToken.userId
         });
         //Return an appropriate error
-        return res.status(401).json({
+        return {
             error:true,
             message:'Link Expired'
-        })
+        };
     }
 
     //If no errors, return the response
-    return res.status(200).json({
+    return {
         error:false,
         message:'Provide new password',
-        id:user._id
-
-    })
+        id:JSON.parse(JSON.stringify(user._id))
+    };
 }
 
 export default check;

@@ -25,7 +25,7 @@ const reset = async(req,res) => {
         if(checkPassword){
             return res.status(402).json({
                 type:'warning',
-                message:"Password cannot be the same as old one"
+                message:"Password cannot be the same as the old one"
             })
         }
 

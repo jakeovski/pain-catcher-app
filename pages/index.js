@@ -2,8 +2,8 @@ import React from "react";
 import {CircularProgress} from "@mui/material";
 import {useSession} from 'next-auth/react';
 import Login from "../components/Login";
-import Home from '../components/Home';
 import Footer from "../components/Footer";
+import {useRouter} from "next/router";
 
 //TODO: Add Footer with version number
 //TODO: Comment the Component
@@ -11,18 +11,25 @@ import Footer from "../components/Footer";
 const Index = ({darkState}) => {
 
     const {status} = useSession();
+    const router = useRouter();
+
+    if (status === "loading") {
+        return (
+            <CircularProgress sx={{marginTop: '50vh !important', marginLeft: '50vw !important'}}/>
+        )
+    }
+
+    if (status === "authenticated") {
+        router.push('/home');
+        return (
+            <CircularProgress sx={{marginTop: '50vh !important', marginLeft: '50vw !important'}}/>
+        )
+    }
 
     return (
         <>
-            {status !== 'unauthenticated' ? status === 'loading' ?
-                    <CircularProgress sx={{marginTop: '50vh !important', marginLeft: '50vw !important'}}/> :
-                    <Home darkState={darkState}/>
-                :
-                <>
-                    <Login darkState={darkState}/>
-                    <Footer/>
-                </>
-            }
+            <Login darkState={darkState}/>
+            <Footer/>
         </>
     )
 }

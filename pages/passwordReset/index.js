@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useRouter} from "next/router";
 import {Alert, Button, Container, Grid, LinearProgress, Paper, Typography} from "@mui/material";
 import Input from "../../helper/Input";
+import check from "../api/email/check";
 
 /**
  * Password Reset Page
@@ -11,7 +12,7 @@ import Input from "../../helper/Input";
  */
 const PasswordReset = ({data}) => {
     const router = useRouter();
-    const dataState = data;
+    console.log(data);
     const [formData,setFormData] = useState({
         password:'',
         confirmPassword:'',
@@ -56,19 +57,21 @@ const PasswordReset = ({data}) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    id: dataState.id,
+                    id: data.id,
                     password:formData.password
                 })
             });
 
             //Await data
-            const data = await res.json();
+            const message = await res.json();
             //Stop loading and show the appropriate message (Success/ Error)
             setLoading(false);
-            setMessage(data);
+            setMessage(message);
 
-            //Redirect to log in screen
-            await router.push('/');
+            if(message.type === 'success'){
+                //Redirect to log in screen
+                await router.push('/');
+            }
         }
     }
 
@@ -164,20 +167,11 @@ const PasswordReset = ({data}) => {
 export async function getServerSideProps({query}) {
     const {user, token} = query;
 
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/email/check`, {
-        method:'POST',
-        headers:{
-            'Content-Type':'application/json',
-        },
-        body: JSON.stringify({
-            email:user,
-            token:token
-        })
-    });
-    const data = await res.json();
-
+    const data = await check(user,token);
     return {
-        props:{data}
+        props:{
+            data
+        }
     }
 }
 

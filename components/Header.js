@@ -55,7 +55,7 @@ const Header = ({darkState,session}) => {
                     flexDirection:'row',
                     alignItems:'center'
                 }}>
-                        <Typography>{session.user.firstName} {session.user.lastName}</Typography>
+                        <Typography variant="body1" sx={{textAlign:'end'}}>{session.user.firstName} {session.user.lastName}</Typography>
 
                         <IconButton
                             size="large"
