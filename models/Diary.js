@@ -27,6 +27,10 @@ const PainDiary = mongoose.Schema({
         type:Date,
         required:true
     },
+    numberOfRecords:{
+        type:Number,
+        required:true,
+    },
     lastRecord:{
         type:Date
     }

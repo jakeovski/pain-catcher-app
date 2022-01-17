@@ -2,7 +2,7 @@ import Connection from "../../../config/dbConnection";
 import Diary from "../../../models/Diary";
 import {DateTime} from "luxon";
 
-
+//TODO:Do a check for correct user session
 const add = async(req,res) => {
     const {diary,userId} = req.body;
     try{
@@ -14,6 +14,7 @@ const add = async(req,res) => {
             description:diary.description.trim(),
             createdDate:DateTime.now(),
             color:diary.color,
+            numberOfRecords:0,
         })
 
         const data = await Diary.find({

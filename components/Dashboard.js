@@ -26,6 +26,13 @@ const Dashboard = ({session}) => {
     const id = openColorPicker ? 'simple-popover' : undefined;
 
     const [newDiaryLoading, setNewDiaryLoading] = useState(false);
+    const [diaryData, setDiaryData] = useState({
+        data: undefined,
+        type: '',
+        message: ''
+    });
+
+    const [modifyDiary,setModifyDiary] = useState(null);
 
     //TODO:Not used right now, delete if will not be used at all
     const [hideDiaryLoading,setHideDiaryLoading] = useState(true);
@@ -65,20 +72,41 @@ const Dashboard = ({session}) => {
     const handleNewDiary = async (e) => {
         e.preventDefault();
         setNewDiaryLoading(true);
-        const res = await fetch('/api/diary/add', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId: session.user.id,
-                diary: newDiary
-            })
-        });
-
-        const data = await res.json();
+        if (modifyDiary) {
+            const res = await fetch('/api/diary/modify', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: session.user.id,
+                    diaryId: modifyDiary,
+                    diary: newDiary
+                })
+            });
+            const data = await res.json();
+            setDiaryData(data);
+            setModifyDiary(null);
+        }else {
+            const res = await fetch('/api/diary/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: session.user.id,
+                    diary: newDiary
+                })
+            });
+            const data = await res.json();
+            setDiaryData(data);
+        }
         setNewDiaryLoading(false);
-        setDiaryData(data);
+        setNewDiary({
+            name: '',
+            description: '',
+            color: theme.palette.primary.main
+        });
     }
 
     const handleDiaryDelete = async (key) => {
@@ -111,11 +139,22 @@ const Dashboard = ({session}) => {
         setDeleteDialogOpen(false);
     }
 
-    const [diaryData, setDiaryData] = useState({
-        data: undefined,
-        type: '',
-        message: ''
-    });
+    const handleModifyDiary = (id,name,description,color) => {
+        setNewDiary({
+            name:name,
+            description: description,
+            color: color
+        });
+        setModifyDiary(id);
+    }
+    const handleDisableModify = () => {
+        setNewDiary({
+            name: '',
+            description: '',
+            color: theme.palette.primary.main
+        });
+        setModifyDiary(null);
+    }
 
     useEffect(() => {
         async function getDiaries() {
@@ -156,7 +195,7 @@ const Dashboard = ({session}) => {
                                                 height: '290px', borderRadius: '15px', cursor: 'pointer',
                                                 backgroundColor: data.color,
                                                 color: getContrast(data.color),
-                                            }} elevation={7}>
+                                            }} elevation={7} onClick={() => console.log(data._id)}>
                                                 <Grid container padding={2} alignContent="space-between" sx={{
                                                     height: 'inherit',
                                                 }}>
@@ -172,7 +211,7 @@ const Dashboard = ({session}) => {
                                                             <Typography>{`Created at ${DateTime.fromISO(data.createdDate).toFormat('dd/LL/yyyy')} ${DateTime.fromISO(data.createdDate).toFormat('HH:mm')}`}</Typography>
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <Typography>Number of Records</Typography>
+                                                            <Typography>Number of Records: {data.numberOfRecords}</Typography>
                                                         </Grid>
                                                         <Grid item xs={12}>
                                                             <Typography>Last record: No Records</Typography>
@@ -181,7 +220,12 @@ const Dashboard = ({session}) => {
                                                     <Grid container item xs={12} justifyContent="space-between">
                                                         <Grid item xs={2}>
                                                             <Tooltip title="Edit" arrow placement="top">
-                                                                <IconButton>
+                                                                <IconButton onClick={() => handleModifyDiary(
+                                                                    data._id,
+                                                                    data.name,
+                                                                    data.description,
+                                                                    data.color
+                                                                )}>
                                                                     <EditIcon sx={{
                                                                         color: getContrast(data.color)
                                                                     }}/>
@@ -226,15 +270,18 @@ const Dashboard = ({session}) => {
                     borderRadius: '10px'
                 }}>
                     <form onSubmit={handleNewDiary}>
-                        <Typography fontWeight="bold" variant="h5" sx={{paddingBottom: '2vh'}}>Add New
-                            Diary</Typography>
+                        <Typography fontWeight="bold" variant="h5" sx={{paddingBottom: '2vh'}}>
+                            {modifyDiary ? `Modify Diary`
+                            : `Add New Diary`}
+                        </Typography>
                         <TextField
                             name="name"
                             multiline
+                            required
                             maxRows={1}
                             value={newDiary.name}
                             onChange={handleChange}
-                            label="Name*"
+                            label="Name"
                             fullWidth
                             inputProps={{
                                 maxLength: NAME_LIMIT
@@ -297,8 +344,18 @@ const Dashboard = ({session}) => {
                             id={id}
                             anchorEl={anchorEl}
                         />
-                        <Button type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>Create New
-                            Diary</Button>
+
+                        <Button type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>
+                            {modifyDiary ? `Modify Diary`
+                                : `Create New Diary`
+                            }
+                        </Button>
+                        {
+                            modifyDiary &&
+                            <Button variant="contained" fullWidth sx={{marginTop:'2vh'}} onClick={handleDisableModify}>
+                                Back
+                            </Button>
+                        }
                         {newDiaryLoading &&
                             <LinearProgress/>
                         }

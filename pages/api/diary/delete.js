@@ -5,6 +5,8 @@ const deleteDiary = async (req,res) => {
 
     if(req.method !== 'DELETE') {
         return req.status(401).json({
+            data:undefined,
+            type:'error',
             message:'Only DELETE method is allowed'
         });
     }
@@ -37,6 +39,5 @@ const deleteDiary = async (req,res) => {
     }
 
 }
-
 
 export default deleteDiary;
