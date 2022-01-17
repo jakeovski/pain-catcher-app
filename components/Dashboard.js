@@ -15,10 +15,13 @@ import ColorPicker from "../helper/ColorPicker";
 import {DateTime} from "luxon";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CustomDialog from "../helper/CustomDialog";
+import {useRouter} from "next/router";
 
 const Dashboard = ({session}) => {
     const theme = useTheme();
+    const router = useRouter();
     const CHARACTER_LIMIT = 200;
     const NAME_LIMIT = 20;
     const [anchorEl, setAnchorEl] = useState(null);
@@ -156,6 +159,10 @@ const Dashboard = ({session}) => {
         setModifyDiary(null);
     }
 
+    const handleDiaryNavigation = async(id) => {
+        await router.push(`/diary/${id}`);
+    }
+
     useEffect(() => {
         async function getDiaries() {
             const res = await fetch('/api/diary', {
@@ -192,10 +199,10 @@ const Dashboard = ({session}) => {
                                     return (
                                         <Grid key={data._id} item lg={4} md={6}>
                                             <Paper sx={{
-                                                height: '290px', borderRadius: '15px', cursor: 'pointer',
+                                                height: '290px', borderRadius: '15px',
                                                 backgroundColor: data.color,
                                                 color: getContrast(data.color),
-                                            }} elevation={7} onClick={() => console.log(data._id)}>
+                                            }} elevation={7}>
                                                 <Grid container padding={2} alignContent="space-between" sx={{
                                                     height: 'inherit',
                                                 }}>
@@ -218,6 +225,15 @@ const Dashboard = ({session}) => {
                                                         </Grid>
                                                     </Grid>
                                                     <Grid container item xs={12} justifyContent="space-between">
+                                                        <Grid item xs={2}>
+                                                            <Tooltip title="Open" arrow placement="top">
+                                                                <IconButton onClick={() => handleDiaryNavigation(data._id)}>
+                                                                    <OpenInFullIcon sx={{
+                                                                        color:getContrast(data.color)
+                                                                    }}/>
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </Grid>
                                                         <Grid item xs={2}>
                                                             <Tooltip title="Edit" arrow placement="top">
                                                                 <IconButton onClick={() => handleModifyDiary(

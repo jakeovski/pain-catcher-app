@@ -2,7 +2,13 @@ import React, {useState} from "react";
 import Palette from "../styles/GlobalPalette";
 import {createTheme, CssBaseline, ThemeProvider} from "@mui/material";
 import {SessionProvider} from "next-auth/react";
+import "@fullcalendar/common/main.css";
+import "@fullcalendar/daygrid/main.css";
+import "@fullcalendar/timegrid/main.css";
 
+//TODO: Comment every class
+//TODO: Separate chunks of code into separate blocks
+//TODO: Clean up
 function MyApp({Component, pageProps:{session,...pageProps}}) {
 
     const [darkState, setDarkState] = useState(false);

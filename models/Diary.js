@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 /**
- * Represents the collection of tokens in mongodb
+ * Represents the collection of pain diaries in mongodb
  * @type {*}
  */
 const PainDiary = mongoose.Schema({
