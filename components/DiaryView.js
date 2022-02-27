@@ -7,8 +7,9 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import {DateTime} from "luxon";
+import cookie from 'cookie-cutter';
 
-
+//TODO:Change date format in calendar for months view to be 25/1 instead of 1/25
 const DiaryView = ({pid, session}) => {
 
     const router = useRouter();
@@ -22,6 +23,7 @@ const DiaryView = ({pid, session}) => {
         endStr:null
     });
 
+    const calendarRef = React.createRef();
     const handleGoBack = async() => {
         await router.push('/home');
     }
@@ -82,9 +84,11 @@ const DiaryView = ({pid, session}) => {
             startStr: null,
             endStr: null
         })
+        calendarRef.current.getApi().unselect();
     }
 
     const handleRecordNavigation = async () => {
+        cookie.set('RecordDates',JSON.stringify(selectedDates));
         await router.push(`/diary/${pid}/new`);
     }
 
@@ -130,6 +134,7 @@ const DiaryView = ({pid, session}) => {
                                         plugins={[ dayGridPlugin, interactionPlugin, timeGridPlugin ]}
                                         initialView="dayGridMonth"
                                         height={600}
+                                        ref={calendarRef}
                                         firstDay={1}
                                         headerToolbar={{
                                             left:'prev,next today',
@@ -137,6 +142,7 @@ const DiaryView = ({pid, session}) => {
                                             right: 'dayGridMonth,timeGridWeek,timeGridDay'
                                         }}
                                         selectable={true}
+                                        unselectAuto={false}
                                         select={(info) => {
                                             handleDateSelected(info);
                                         }}

@@ -9,10 +9,17 @@ import "@fullcalendar/timegrid/main.css";
 //TODO: Comment every class
 //TODO: Separate chunks of code into separate blocks
 //TODO: Clean up
+//TODO: Make responsive for 4K
 function MyApp({Component, pageProps:{session,...pageProps}}) {
 
     const [darkState, setDarkState] = useState(false);
     const paletteType = darkState ? "dark" : "light";
+    // const [selectedDates,setSelectedDates] = useState({
+    //     startDate:null,
+    //     endDate:null,
+    //     startStr:null,
+    //     endStr:null
+    // });
 
 
     const theme = createTheme({
@@ -56,7 +63,8 @@ function MyApp({Component, pageProps:{session,...pageProps}}) {
         <SessionProvider session={session}>
         <ThemeProvider theme={theme}>
             <CssBaseline/>
-            <Component {...pageProps} darkState={darkState}/>
+            <Component {...pageProps}
+                       darkState={darkState}/>
         </ThemeProvider>
         </SessionProvider>
     );

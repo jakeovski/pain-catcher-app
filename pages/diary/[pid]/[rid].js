@@ -6,7 +6,7 @@ import Header from "../../../components/Header";
 import RecordView from "../../../components/RecordView";
 
 
-const RecordPage = ({darkState}) => {
+const RecordPage = ({darkState,selectedDates, setSelectedDates}) => {
     const router = useRouter();
     const {data:session,status} = useSession();
     const {pid,rid} = router.query;
@@ -25,7 +25,7 @@ const RecordPage = ({darkState}) => {
     return (
         <Container maxWidth="xl">
             <Header darkState={darkState} session={session}/>
-            <RecordView session={session} pid={pid} recordId={rid}/>
+            <RecordView session={session} pid={pid} recordId={rid} selectedDates={selectedDates} setSelectedDates={setSelectedDates}/>
         </Container>
     )
 }

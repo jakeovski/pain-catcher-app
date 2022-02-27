@@ -86,7 +86,7 @@ const Login = ({darkState}) => {
                 //Stop loading and show the appropriate message (Success/ Error)
                 setShowLoading(false);
                 setErrorMessage(data);
-                switchRegister();
+                switchRegister(false);
             }
         }else if (isForgot) {
             setShowLoading(true);
@@ -190,9 +190,9 @@ const Login = ({darkState}) => {
     /**
      * Switch to Register mode
      */
-    const switchRegister = () => {
+    const switchRegister = (reset) => {
         setIsRegister((prevRegister) => !prevRegister);
-        if(errorMessage){
+        if(errorMessage && reset){
             resetError();
         }
     }
@@ -314,7 +314,7 @@ const Login = ({darkState}) => {
                         {!isForgot &&
                             <Grid container justifyContent="flex-end">
                                 <Grid item>
-                                    <Button onClick={switchRegister} sx={{paddingRight:0}}>
+                                    <Button onClick={() => switchRegister(true)} sx={{paddingRight:0}}>
                                         {isRegister
                                             ? "Already have an account? Sign In!"
                                             : "Don't have an account? Register!"}

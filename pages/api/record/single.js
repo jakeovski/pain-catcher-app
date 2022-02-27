@@ -2,6 +2,10 @@ import {getSession} from "next-auth/react";
 import Connection from "../../../config/dbConnection";
 import Diary from "../../../models/Diary";
 import Record from "../../../models/Record";
+import Diet from "../../../models/Diet";
+import Medication from "../../../models/Medication";
+import Symptoms from "../../../models/Symptoms";
+import Triggers from "../../../models/Triggers";
 
 
 const getRecord = async(req,res) => {
@@ -38,11 +42,45 @@ const getRecord = async(req,res) => {
                 message:'Diary does not exist'
             });
         }
+            const diet = await Diet.find({
+                userId:userId
+            });
+            const medication = await Medication.find({
+                userId:userId
+            });
+            const symptoms = await Symptoms.find({
+                userId:userId
+            });
+            const triggers = await Triggers.find({
+                userId:userId
+            })
+
         if (recordId === 'new') {
             return res.status(200).json({
                 data:{
                     diaryId: diary._id,
-                    record:null
+                    record: {
+                        painLevel:0,
+                        areas:'',
+                        triggers:'',
+                        symptoms:'',
+                        activityLevel:0,
+                        medications:'',
+                        mood:0,
+                        sleep:{
+                            hours:'',
+                            minutes:''
+                        },
+                        diet:'',
+                        hormoneLevel:'',
+                        description:''
+                    },
+                    options:{
+                        diet:diet,
+                        medication:medication,
+                        symptoms:symptoms,
+                        triggers:triggers
+                    }
                 },
                 type:'',
                 message:'Success'
@@ -65,7 +103,13 @@ const getRecord = async(req,res) => {
                 return res.status(200).json({
                     data:{
                         diaryId:diaryId,
-                        record:record
+                        record:record,
+                        options:{
+                            diet:diet,
+                            medication:medication,
+                            symptoms:symptoms,
+                            triggers:triggers
+                        }
                     },
                     type:'',
                     message:'Success'

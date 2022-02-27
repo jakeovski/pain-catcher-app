@@ -1,7 +1,7 @@
 {
   "name": "pain-catcher-app",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -17,21 +17,25 @@
     "@fullcalendar/react": "^5.10.1",
     "@fullcalendar/timegrid": "^5.10.1",
     "@mui/icons-material": "^5.2.5",
+    "@mui/lab": "^5.0.0-alpha.67",
     "@mui/material": "^5.2.5",
     "bcrypt": "^5.0.1",
+    "cookie-cutter": "^0.2.0",
     "dotenv": "^10.0.0",
+    "image-map": "^2.0.1",
     "luxon": "^2.2.0",
     "mongoose": "^6.1.3",
-    "next": "12.0.7",
+    "next": "^12.1.0",
     "next-auth": "^4.0.5",
     "next-transpile-modules": "^9.0.0",
     "nodemailer": "^6.7.2",
     "react": "17.0.2",
     "react-colorful": "^5.5.1",
-    "react-dom": "17.0.2"
+    "react-dom": "17.0.2",
+    "react-img-mapper": "^1.3.0"
   },
   "devDependencies": {
     "eslint": "8.5.0",
-    "eslint-config-next": "12.0.7"
+    "eslint-config-next": "^12.1.0"
   }
 }
