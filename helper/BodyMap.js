@@ -1,9 +1,9 @@
-import React from "react";
+import React, {useMemo, useState} from "react";
 import ImageMapper from 'react-img-mapper';
 import {useTheme} from "@mui/material";
 import {FRONT_AREAS,BACK_AREAS} from '../constants/BodyAreas';
 
-export const FrontBody = () => {
+const FrontBody = ({handleSelect,toggleFront}) => {
     const theme = useTheme();
     const URL = `/FrontBody.png`;
     const color = `${theme.palette.secondary.main}70`;
@@ -19,11 +19,13 @@ export const FrontBody = () => {
                      responsive
                      stayMultiHighlighted
                      toggleHighlighted
+                     onClick={(area,index,event) => handleSelect(area,event)}
                      />
     )
 }
+export default React.memo(FrontBody);
 
-export const BackBody = () => {
+export const BackBody = ({handleSelect,toggleFront}) => {
     const theme = useTheme();
     const URL = '/BackBody.png';
     const color = `${theme.palette.secondary.main}70`;
@@ -39,7 +41,9 @@ export const BackBody = () => {
                      responsive
                      stayMultiHighlighted
                      toggleHighlighted
+                     onClick={(area,index,event) => handleSelect(area,event)}
                      />
     )
 }
+
 

@@ -5,6 +5,7 @@ import {SessionProvider} from "next-auth/react";
 import "@fullcalendar/common/main.css";
 import "@fullcalendar/daygrid/main.css";
 import "@fullcalendar/timegrid/main.css";
+import Head from 'next/head';
 
 //TODO: Comment every class
 //TODO: Separate chunks of code into separate blocks
@@ -62,6 +63,9 @@ function MyApp({Component, pageProps:{session,...pageProps}}) {
     return (
         <SessionProvider session={session}>
         <ThemeProvider theme={theme}>
+            <Head>
+                <title>Pain Catcher</title>
+            </Head>
             <CssBaseline/>
             <Component {...pageProps}
                        darkState={darkState}/>

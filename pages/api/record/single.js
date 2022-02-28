@@ -45,6 +45,7 @@ const getRecord = async(req,res) => {
             const diet = await Diet.find({
                 userId:userId
             });
+
             const medication = await Medication.find({
                 userId:userId
             });
@@ -61,17 +62,17 @@ const getRecord = async(req,res) => {
                     diaryId: diary._id,
                     record: {
                         painLevel:0,
-                        areas:'',
-                        triggers:'',
-                        symptoms:'',
+                        areas:[],
+                        triggers:[],
+                        symptoms:[],
                         activityLevel:0,
-                        medications:'',
+                        medications:[],
                         mood:0,
                         sleep:{
                             hours:'',
                             minutes:''
                         },
-                        diet:'',
+                        diet:[],
                         hormoneLevel:'',
                         description:''
                     },
