@@ -38,7 +38,7 @@ const PainRecord = mongoose.Schema({
         type:Array,
     },
     hormoneLevels:{
-        type:Array,
+        type:Object,
     },
     description:{
         type:String,

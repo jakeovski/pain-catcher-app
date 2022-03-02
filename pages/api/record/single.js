@@ -73,7 +73,27 @@ const getRecord = async(req,res) => {
                             minutes:''
                         },
                         diet:[],
-                        hormoneLevel:'',
+                        hormoneDetails:{
+                            gender:'',
+                            PSA:'',
+                            oestradiol:'',
+                            progesterone:'',
+                            DHEA:'',
+                            testosterone:{
+                                value:'',
+                                measure:'free'
+                            },
+                            FBC:{
+                                MCV:'',
+                                MCH:'',
+                                MCHC:'',
+                                RDW:''
+                            },
+                            vitaminD:'',
+                            SHBG:'',
+                            FSH:'',
+                            populated:false
+                        },
                         description:''
                     },
                     options:{

@@ -350,16 +350,18 @@ const Dashboard = ({session}) => {
                                     onClick={handleDialogOpen}
                                 />
                             </Grid>
+                            <Grid item xs={12}>
+                                <ColorPicker
+                                    open={openColorPicker}
+                                    onClose={handleDialogClose}
+                                    selectedValue={newDiary.color}
+                                    handleColorChange={handleColorChange}
+                                    id={id}
+                                    anchorEl={anchorEl}
+                                />
+                            </Grid>
 
                         </Grid>
-                        <ColorPicker
-                            open={openColorPicker}
-                            onClose={handleDialogClose}
-                            selectedValue={newDiary.color}
-                            handleColorChange={handleColorChange}
-                            id={id}
-                            anchorEl={anchorEl}
-                        />
 
                         <Button type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>
                             {modifyDiary ? `Modify Diary`
