@@ -14,9 +14,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import HelpIcon from '@mui/icons-material/Help';
 import {Alert} from "@mui/lab";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 
-const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordData,hormoneDialogOpen, setHormoneDialogOpen}) => {
+const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordData,hormoneDialogOpen, setHormoneDialogOpen, hormoneDetailsDefault}) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
     const [showAlert,setShowAlert] = useState(false);
@@ -113,6 +114,14 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
         })
     }
 
+    const removeHormoneDetails = () => {
+        setRecordData({
+            ...recordData,hormoneDetails:hormoneDetailsDefault
+        });
+        setHormoneDetails(hormoneDetailsDefault);
+        setHormoneDialogOpen(false);
+    }
+
     const testosteroneValues = [
         {
             value:'free',
@@ -161,11 +170,8 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
             check = true;
         }
         if (check) {
-            setHormoneDetails({
-                ...hormoneDetails,populated:true
-            })
             setRecordData({
-                ...recordData,hormoneDetails:hormoneDetails
+                ...recordData,hormoneDetails:{...hormoneDetails,populated: true}
             });
             setHormoneDialogOpen(false);
         }
@@ -639,8 +645,21 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
                 </Grid>
             </DialogContent>
             <DialogActions>
-                <Button variant="contained" onClick={handleDialogClose}>Cancel</Button>
-                <Button variant="contained" disabled={!hormoneDetails.gender} onClick={handleDialogSubmit}>Confirm</Button>
+                <Grid container justifyContent="space-between">
+                    <Grid xs={4} item>
+                        <IconButton onClick={removeHormoneDetails} disabled={!recordData.hormoneDetails.populated} variant="contained" color="primary">
+                            <DeleteIcon/>
+                        </IconButton>
+                    </Grid>
+                    <Grid item xs={3} container spacing={1} justifyContent="flex-end">
+                        <Grid item>
+                            <Button variant="contained" onClick={handleDialogClose}>Cancel</Button>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="contained" disabled={!hormoneDetails.gender} onClick={handleDialogSubmit}>Confirm</Button>
+                        </Grid>
+                    </Grid>
+                </Grid>
             </DialogActions>
         </Dialog>
     )

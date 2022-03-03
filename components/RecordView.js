@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {createRef, useEffect, useState} from 'react';
 import {useRouter} from "next/router";
 import {
     Box,
@@ -27,6 +27,8 @@ import FrontBody,{BackBody} from '../helper/BodyMap';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import HormoneDialog from "../helper/HormoneDialog";
+import EditIcon from '@mui/icons-material/Edit';
+import { useScreenshot } from 'use-react-screenshot'
 
 const filter = createFilterOptions();
 
@@ -52,7 +54,49 @@ const RecordView = ({recordId,pid,session}) => {
     const [bodyAreas,setBodyAreas] = useState([]);
     const [hormoneDialogOpen,setHormoneDialogOpen] = useState(false);
     const [hormoneDetails,setHormoneDetails] = useState(null);
+    const frontBodyRef = createRef(null);
+    const backBodyRef = createRef(null);
+    const [frontBodyImage,setFrontBodyImage] = useScreenshot();
+    const [backBodyImage,setBackBodyImage] = useScreenshot();
 
+    const hormoneDetailsDefault = {
+        gender:'',
+        PSA:'',
+        oestradiol:'',
+        progesterone:'',
+        DHEA:'',
+        testosterone:{
+            value:'',
+            measure:'free'
+        },
+        FBC:{
+            MCV:'',
+            MCH:'',
+            MCHC:'',
+            RDW:''
+        },
+        vitaminD:'',
+        SHBG:'',
+        FSH:'',
+        populated:false
+    };
+
+    const recordDefault = {
+        painLevel:0,
+        areas:[],
+        triggers:[],
+        symptoms:[],
+        activityLevel:0,
+        medications:[],
+        mood:0,
+        sleep:{
+            hours:'',
+            minutes:''
+        },
+        diet:[],
+        hormoneDetails:hormoneDetailsDefault,
+        description:''
+    }
 
     const DESCRIPTION_LIMIT = 250;
 
@@ -147,6 +191,11 @@ const RecordView = ({recordId,pid,session}) => {
     }
 
     const changeBody = () => {
+        if(bodyFrontToggle) {
+            setFrontBodyImage(frontBodyRef.current);
+        }else {
+            setBackBodyImage(backBodyRef.current);
+        }
         setBodyFrontToggle((prev) => !prev);
     }
 
@@ -160,12 +209,18 @@ const RecordView = ({recordId,pid,session}) => {
                }
         });
     }
-    // useEffect(() => {
-    //     console.log(recordData);
-    // },[recordData]);
 
     const handleHormoneDialogOpen = () => {
         setHormoneDialogOpen(true);
+    }
+
+    const clearRecord = () => {
+        setHormoneDetails(hormoneDetailsDefault);
+        setRecordData(recordDefault);
+    }
+
+    const handleRecordSubmit = () => {
+
     }
 
     return(
@@ -285,7 +340,7 @@ const RecordView = ({recordId,pid,session}) => {
                                 </Grid>
                                 <Grid item container xs={10} md={10} sx={{paddingLeft:'1vw !important'}}>
                                     <Rating name="highlight-selected-only"
-                                            defaultValue={0}
+                                            value={recordData.mood}
                                             IconContainerComponent={IconContainer}
                                             highlightSelectedOnly
                                             onChange={(event,newValue) => {
@@ -333,65 +388,64 @@ const RecordView = ({recordId,pid,session}) => {
                                     )}
                                 />
                             </Grid>
-                            <Grid item container xs={12} sm={10} md={6} columnSpacing={1} alignItems="center">
+                            <Grid item container xs={12} sm="auto" md={6} columnSpacing={1} alignItems="center">
                                 <Grid item xs="auto" sm="auto" md="auto">
                                     <Typography>Sleep:</Typography>
                                 </Grid>
-                                <Grid item xs={3} sm={3} md={3}>
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        type="number"
-                                        value={recordData.sleep.hours}
-                                        onChange={(event) => {
-                                            let value = event.target.value;
-                                            if (parseInt(event.target.value) > 24) {
-                                                value = '24';
-                                            }else if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                value = '0';
-                                            }
-                                            setRecordData({
-                                                ...recordData,sleep:{
-                                                    hours: value,
-                                                    minutes: recordData.sleep.minutes
+                                    <Grid item xs="auto" sm="auto" md={3}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            type="number"
+                                            value={recordData.sleep.hours}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) > 24) {
+                                                    value = '24';
+                                                }else if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
                                                 }
-                                            })
-                                        }}
-                                        InputProps={{
-                                            inputProps:{min:0,max:24},
-                                            endAdornment:<InputAdornment position="end">hrs</InputAdornment>
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={3} sm={3} md={3}>
-                                    <TextField
-                                        fullWidth
-                                        size="small"
-                                        type="number"
-                                        value={recordData.sleep.minutes}
-                                        onChange={(event) => {
-                                            let value = event.target.value;
-                                            if (parseInt(event.target.value) > 59) {
-                                                value = '59';
-                                            }else if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                value = '0';
-                                            }
-                                            setRecordData({
-                                                ...recordData,sleep:{
-                                                    hours: recordData.sleep.hours,
-                                                    minutes: value
-                                                }
-                                            })
-                                        }}
-                                        InputProps={{
-                                            inputProps:{min:0,max:59},
-                                            endAdornment:<InputAdornment position="end">min</InputAdornment>
-                                        }}
+                                                setRecordData({
+                                                    ...recordData,sleep:{
+                                                        hours: value,
+                                                        minutes: recordData.sleep.minutes
+                                                    }
+                                                })
+                                            }}
+                                            InputProps={{
+                                                inputProps:{min:0,max:24},
+                                                endAdornment:<InputAdornment position="end">hrs</InputAdornment>
+                                            }}
                                         />
-                                </Grid>
-
+                                    </Grid>
+                                    <Grid item xs="auto" sm="auto" md={3}>
+                                        <TextField
+                                            fullWidth
+                                            size="small"
+                                            type="number"
+                                            value={recordData.sleep.minutes}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) > 59) {
+                                                    value = '59';
+                                                }else if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setRecordData({
+                                                    ...recordData,sleep:{
+                                                        hours: recordData.sleep.hours,
+                                                        minutes: value
+                                                    }
+                                                })
+                                            }}
+                                            InputProps={{
+                                                inputProps:{min:0,max:59},
+                                                endAdornment:<InputAdornment position="end">min</InputAdornment>
+                                            }}
+                                        />
+                                    </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={6} md={6} columnSpacing={1} alignSelf="center">
+                            <Grid item xs={12} sm={6} md={6} columnSpacing={1} alignSelf="auto">
                                 <Autocomplete
                                     multiple
                                     id="symptomSelect"
@@ -413,6 +467,112 @@ const RecordView = ({recordId,pid,session}) => {
                                         />
                                     )}
                                 />
+                            </Grid>
+                            <Grid item container xs={12} md={6} lg={6} alignSelf="center" spacing={1}>
+                                <Grid item xs={recordData.hormoneDetails.populated ? 12 : "auto"} alignSelf="auto">
+                                    <Typography>Hormone Level:</Typography>
+                                </Grid>
+                                <Grid container item xs={recordData.hormoneDetails.populated ? 10 : "auto"}
+                                      sx={{border: recordData.hormoneDetails.populated ? '1px solid rgb(180, 180, 180)' : 'none',
+                                        borderRadius:1,
+                                          paddingTop:'0 !important',
+                                          ml:1
+                                      }}>
+                                    {recordData.hormoneDetails.populated ?
+                                        <>
+                                        {recordData.hormoneDetails.gender === 'Male' ?
+
+
+                                                    recordData.hormoneDetails.PSA &&
+                                            <Grid item xs={6} alignSelf="center">
+                                                    <Typography fontSize="0.8rem">{`PSA (Total): ${recordData.hormoneDetails.PSA}µg/L`}</Typography>
+                                            </Grid>
+
+                                            :
+
+                                                    recordData.hormoneDetails.FSH &&
+                                            <Grid item xs={6} alignSelf="center">
+                                            <Typography fontSize="0.8rem">{`FSH: ${recordData.hormoneDetails.FSH}'IU/L'`}</Typography>
+                                            </Grid>
+                                        }
+                                                {recordData.hormoneDetails.oestradiol &&
+                                                    <Grid item xs={6} alignSelf="center">
+                                                    <Typography fontSize="0.8rem">{`Oestradiol: ${recordData.hormoneDetails.oestradiol}pmol/L`}</Typography>
+                                                    </Grid>
+
+                                                }
+                                                {recordData.hormoneDetails.progesterone &&
+                                                    <Grid item xs={6} alignSelf="center">
+
+                                                    <Typography fontSize="0.8rem">{`Progesterone: ${recordData.hormoneDetails.progesterone}nmol/L`}</Typography>
+                                                    </Grid>
+
+                                                }
+                                                {recordData.hormoneDetails.DHEA &&
+                                                    <Grid item xs={6} alignSelf="center">
+
+                                                    <Typography fontSize="0.8rem">{`DHEA-S: ${recordData.hormoneDetails.DHEA}µmol/L`}</Typography>
+                                                    </Grid>
+
+                                                }
+                                                {recordData.hormoneDetails.testosterone.value &&
+                                                    <Grid item xs={6} alignSelf="center">
+
+                                                    <Typography fontSize="0.8rem">{`Testosterone: ${recordData.hormoneDetails.testosterone.value}${recordData.hormoneDetails.testosterone.measure === 'total' ? 'nmol/L' : 'pg/mL'}`}</Typography>
+                                                    </Grid>
+
+                                                }
+                                                {recordData.hormoneDetails.vitaminD &&
+                                                    <Grid item xs={6} alignSelf="center">
+
+                                                    <Typography fontSize="0.8rem">{`Vitamin D: ${recordData.hormoneDetails.vitaminD}nmol/L`}</Typography>
+                                                    </Grid>
+                                                }
+
+                                            {recordData.hormoneDetails.gender === 'Male' &&
+                                                recordData.hormoneDetails.SHBG &&
+                                                <Grid item xs={6} alignSelf="center">
+                                                    <Typography fontSize="0.8rem">{`SHBG: ${recordData.hormoneDetails.SHBG}nmol/L`}</Typography>
+                                                </Grid>
+                                            }
+                                            {recordData.hormoneDetails.FBC.MCH &&
+                                                <Grid item xs={6}>
+                                                    <Typography fontSize="0.8rem">{`MCH: ${recordData.hormoneDetails.FBC.MCH}`}</Typography>
+                                                </Grid>
+                                            }
+                                            {recordData.hormoneDetails.FBC.MCHC &&
+                                                <Grid item xs={6}>
+                                                    <Typography fontSize="0.8rem">{`MCHC: ${recordData.hormoneDetails.FBC.MCHC}`}</Typography>
+                                                </Grid>
+                                            }
+                                            {recordData.hormoneDetails.FBC.MCV &&
+                                                <Grid item xs={6}>
+                                                    <Typography fontSize="0.8rem">{`MCV: ${recordData.hormoneDetails.FBC.MCV}`}</Typography>
+                                                </Grid>
+                                            }
+                                            {recordData.hormoneDetails.FBC.RDW &&
+                                                <Grid item xs={6}>
+                                                    <Typography fontSize="0.8rem">{`RDW: ${recordData.hormoneDetails.FBC.RDW}`}</Typography>
+                                                </Grid>
+                                            }
+                                                {/*<Grid item xs={6}>*/}
+                                                {/*    /!*<Button variant="contained" size="small" onClick={handleHormoneDialogOpen}>Edit</Button>*!/*/}
+                                                {/*</Grid>*/}
+                                                {/*<Grid item xs={6}>*/}
+                                                {/*    <Button variant="contained" size="small" onClick={removeHormoneDetails}>Remove</Button>*/}
+                                                {/*</Grid>*/}
+                                        </>
+                                        :
+                                        <Grid item xs={12}>
+                                            <Button onClick={handleHormoneDialogOpen} size="small" variant="contained">Input Hormone Records</Button>
+                                        </Grid>
+                                    }
+                                </Grid>
+                                {recordData.hormoneDetails.populated &&
+                                    <Grid item xs={1}>
+                                        <IconButton onClick={handleHormoneDialogOpen}><EditIcon color="primary"/></IconButton>
+                                    </Grid>
+                                }
                             </Grid>
                             <Grid item container xs={12} md={6} lg={12} xl={6} columnSpacing={1} alignSelf="center">
                                 <Grid item xs="auto" sm="auto" md="auto" alignSelf="center">
@@ -453,7 +613,7 @@ const RecordView = ({recordId,pid,session}) => {
                                     </Grid>
                                 </Grid>
                             </Grid>
-                            <Grid item xs={12} sm={5} md={6} columnSpacing={1} alignSelf="center">
+                            <Grid item xs={12} sm={6} md={6} columnSpacing={1} alignSelf="center">
                                 <Autocomplete
                                     multiple
                                     id="dietSelect"
@@ -476,14 +636,6 @@ const RecordView = ({recordId,pid,session}) => {
                                     )}
                                 />
                             </Grid>
-                            <Grid item container xs={12} lg={6} alignSelf="center">
-                                <Grid item xs="auto" alignSelf="center">
-                                    <Typography>Hormone Level:</Typography>
-                                </Grid>
-                                <Grid item xs={8}>
-                                    <Button sx={{ml:1}} onClick={handleHormoneDialogOpen} size="small" variant="contained">Input Hormone Records</Button>
-                                </Grid>
-                            </Grid>
                             <Grid item container xs={12} xl={6}>
                                 <TextField
                                     inputProps={{
@@ -501,10 +653,10 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container justifyContent="space-between" xs={12}>
                                 <Grid item xs={4} md={3}>
-                                    <Button fullWidth variant="contained">Add Record</Button>
+                                    <Button fullWidth variant="contained" onClick={handleRecordSubmit}>Add Record</Button>
                                 </Grid>
                                 <Grid item xs={3} md={2} textAlign="end" alignSelf="center">
-                                    <Button fullWidth variant="contained">Clear</Button>
+                                    <Button fullWidth variant="contained" onClick={clearRecord}>Clear All</Button>
                                 </Grid>
                             </Grid>
                         </Grid>
@@ -522,10 +674,10 @@ const RecordView = ({recordId,pid,session}) => {
                                 <Typography fontWeight="bold" variant="h6">Bodymap</Typography>
                             </Grid>
                             <Grid item container xs={12} display="flex" justifyContent="center" height={622}>
-                                        <Box sx={{display:bodyFrontToggle ? 'block' : 'none'}}>
+                                        <Box sx={{display:bodyFrontToggle ? 'block' : 'none'}}  ref={frontBodyRef}>
                                             <FrontBody handleSelect={handleSelect} toggleFront={bodyFrontToggle}/>
                                         </Box>
-                                        <Box sx={{visibility:bodyFrontToggle ? 'hidden' : 'visible'}}>
+                                        <Box sx={{visibility:bodyFrontToggle ? 'hidden' : 'visible'}} ref={backBodyRef}>
                                             <BackBody handleSelect={handleSelect} toggleFront={bodyFrontToggle}/>
                                         </Box>
                             </Grid>
@@ -556,9 +708,19 @@ const RecordView = ({recordId,pid,session}) => {
                                    recordData={recordData}
                                    setRecordData={setRecordData}
                                    hormoneDialogOpen={hormoneDialogOpen}
-                                   setHormoneDialogOpen={setHormoneDialogOpen}/>
+                                   setHormoneDialogOpen={setHormoneDialogOpen}
+                                   hormoneDetailsDefault={hormoneDetailsDefault}/>
                 </Grid>
+                    <Grid item container xs={12}>
+                        <Grid item xs={6}>
+                            <img width={350} src={frontBodyImage} alt={`Front body image`}/>
+                        </Grid>
+                        <Grid item xs={6}>
+                            <img width={350} src={backBodyImage} alt={`Back body Image`} />
+                        </Grid>
+                    </Grid>
                 </>
+
             }
             </Grid>
     )
