@@ -11,7 +11,8 @@ const diet = mongoose.Schema({
     },
     productName:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     }
 });
 

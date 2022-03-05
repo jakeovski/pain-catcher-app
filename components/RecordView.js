@@ -1,19 +1,20 @@
-import React, {createRef, useEffect, useState} from 'react';
+import React, {createRef, useEffect, useRef, useState} from 'react';
 import {useRouter} from "next/router";
 import {
     Box,
     Button,
-    ButtonGroup, Chip,
+    Chip,
     CircularProgress,
     Grid,
-    IconButton, InputAdornment,
+    IconButton,
+    InputAdornment,
     Paper,
     Rating,
-    Stack, TextField,
+    TextField,
     Typography
 } from "@mui/material";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import {DateTimePicker} from "@mui/lab";
+import {Alert, LoadingButton} from "@mui/lab";
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import SentimentVeryDissatisfiedIcon from '@mui/icons-material/SentimentVeryDissatisfied';
@@ -22,13 +23,13 @@ import SentimentSatisfiedIcon from '@mui/icons-material/SentimentSatisfied';
 import SentimentSatisfiedAltIcon from '@mui/icons-material/SentimentSatisfiedAltOutlined';
 import SentimentVerySatisfiedIcon from '@mui/icons-material/SentimentVerySatisfied';
 import cookie from "cookie-cutter";
-import Autocomplete,{createFilterOptions} from '@mui/material/Autocomplete';
-import FrontBody,{BackBody} from '../helper/BodyMap';
+import Autocomplete, {createFilterOptions} from '@mui/material/Autocomplete';
+import FrontBody, {BackBody} from '../helper/BodyMap';
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import HormoneDialog from "../helper/HormoneDialog";
 import EditIcon from '@mui/icons-material/Edit';
-import { useScreenshot } from 'use-react-screenshot'
+import {useScreenshot} from 'use-react-screenshot'
 
 const filter = createFilterOptions();
 
@@ -54,10 +55,37 @@ const RecordView = ({recordId,pid,session}) => {
     const [bodyAreas,setBodyAreas] = useState([]);
     const [hormoneDialogOpen,setHormoneDialogOpen] = useState(false);
     const [hormoneDetails,setHormoneDetails] = useState(null);
-    const frontBodyRef = createRef(null);
-    const backBodyRef = createRef(null);
-    const [frontBodyImage,setFrontBodyImage] = useScreenshot();
-    const [backBodyImage,setBackBodyImage] = useScreenshot();
+    const [buttonLoading,setButtonLoading] = useState(false);
+    const frontBodyRef = useRef('front');
+    const backBodyRef = useRef('back');
+    const [frontBodyImage,setFrontBodyImage] = useScreenshot({
+        type:"image/jpeg",
+        quality:1.0
+    });
+    const [backBodyImage,setBackBodyImage] = useScreenshot({
+        type:"image/jpeg",
+        quality:1.0
+    });
+    const handleTriggerSelect = (event,value) => {
+        setRecordData({
+            ...recordData,triggers:value
+        });
+    }
+    const handleMedicationSelect = (event,value) => {
+        setRecordData({
+            ...recordData,medications:value
+        })
+    }
+    const handleSymptomSelect = (event,value) => {
+       setRecordData({
+           ...recordData,symptoms:value
+       })
+    }
+    const handleDietSelect = (event,value) => {
+        setRecordData({
+            ...recordData,diet:value
+        })
+    }
 
     const hormoneDetailsDefault = {
         gender:'',
@@ -166,7 +194,10 @@ const RecordView = ({recordId,pid,session}) => {
             if(!res.data) {
                 router.push('/home');
             }else if (res.type) {
-                //TODO:Return error message
+                setErrorMessage({
+                    type:res.type,
+                    message:res.message
+                })
             }else {
                 setDiaryId(res.data.diaryId);
                 setRecordData(res.data.record);
@@ -200,7 +231,6 @@ const RecordView = ({recordId,pid,session}) => {
     }
 
     const handleSelect = async(area,event) => {
-        // setBodyAreas(arr => [...arr,{id:area.id,name:area.name}]);
         setBodyAreas((prevState) => {
                if (prevState.some(e => e.id === area.id)){
                    return prevState.filter(item => item.id !== area.id);
@@ -219,8 +249,64 @@ const RecordView = ({recordId,pid,session}) => {
         setRecordData(recordDefault);
     }
 
-    const handleRecordSubmit = () => {
+    const returnBase64 = async (toggle,bodyPart) => {
+        if (toggle && bodyPart === 'front') {
+            setFrontBodyImage(frontBodyRef.current).then((res) => {
+                return res;
+            });
+        }
+        if (!toggle && bodyPart === 'front') {
+            return frontBodyImage;
+        }
+        if (toggle && bodyPart === 'back') {
+            return backBodyImage;
+        }
+        if (!toggle && bodyPart === 'back') {
+            setBackBodyImage(backBodyRef.current).then((res) => {
+                return res;
+            });
+        }
+    }
 
+    const handleRecordSubmit = async() => {
+
+        if(recordData.painLevel === 0) {
+            setErrorMessage({
+                type:'warning',
+                message: 'At least Pain Level should be specified!'
+            })
+        }else {
+            setButtonLoading(true);
+            // const frontBase64 = await returnBase64(bodyFrontToggle,'front');
+            // const backBase64 = await returnBase64(bodyFrontToggle,'back');
+
+            const res = await fetch('/api/record/add',{
+                method:'POST',
+                headers:{
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: session.user.id,
+                    diaryId:pid,
+                    record:recordData,
+                    bodyAreas:bodyAreas,
+                    dates:selectedDates,
+                    frontImage: bodyFrontToggle ? await setFrontBodyImage(frontBodyRef.current) : await frontBodyImage,
+                    backImage: bodyFrontToggle ? await backBodyImage : await setBackBodyImage(backBodyRef.current)
+                })
+            });
+
+            const data = await res.json();
+            if (data.type) {
+                setErrorMessage({
+                    type: data.type,
+                    message: data.message
+                });
+                setButtonLoading(false);
+            }else {
+                router.push(`/diary/${diaryId}`);
+            }
+        }
     }
 
     return(
@@ -256,7 +342,7 @@ const RecordView = ({recordId,pid,session}) => {
                                             defaultValue={0}
                                             onChange={(event,newValue) => {
                                                 setRecordData({
-                                                    ...recordData,painLevel:newValue
+                                                    ...recordData,painLevel:newValue ? newValue : 0
                                                 })
 
                                             }}
@@ -318,11 +404,12 @@ const RecordView = ({recordId,pid,session}) => {
                                     limitTags={2}
                                     defaultValue={recordData.medications}
                                     disableCloseOnSelect
+                                    onChange={handleMedicationSelect}
                                     options={medication.map((option) => option.medicationName)}
                                     freeSolo
                                     renderTags={(value, getTagProps) =>
                                         value.map((option, index) => (
-                                            <Chip key={index} variant="outlined" label={option} {...getTagProps({ index })} />
+                                            <Chip key={index} variant="outlined" label={option.toUpperCase()} {...getTagProps({ index })} />
                                         ))
                                     }
                                     renderInput={(params) => (
@@ -345,7 +432,7 @@ const RecordView = ({recordId,pid,session}) => {
                                             highlightSelectedOnly
                                             onChange={(event,newValue) => {
                                                 setRecordData({
-                                                    ...recordData,mood:newValue
+                                                    ...recordData,mood:newValue ? newValue : 0
                                                 });
                                             }}
                                             onChangeActive={(event,newHover) => {
@@ -370,13 +457,14 @@ const RecordView = ({recordId,pid,session}) => {
                                     multiple
                                     id="triggersSelect"
                                     limitTags={2}
+                                    onChange={handleTriggerSelect}
                                     defaultValue={recordData.triggers}
                                     disableCloseOnSelect
                                     options={triggers.map((option) => option.triggerName)}
                                     freeSolo
                                     renderTags={(value, getTagProps) =>
                                         value.map((option, index) => (
-                                            <Chip key={index} variant="outlined" label={option} {...getTagProps({ index })} />
+                                            <Chip key={index} variant="outlined" label={option.toUpperCase()} {...getTagProps({ index })} />
                                         ))
                                     }
                                     renderInput={(params) => (
@@ -452,11 +540,12 @@ const RecordView = ({recordId,pid,session}) => {
                                     limitTags={2}
                                     defaultValue={recordData.symptoms}
                                     disableCloseOnSelect
+                                    onChange={handleSymptomSelect}
                                     options={symptoms.map((option) => option.symptomName)}
                                     freeSolo
                                     renderTags={(value, getTagProps) =>
                                         value.map((option, index) => (
-                                            <Chip key={index} variant="outlined" label={option} {...getTagProps({ index })} />
+                                            <Chip key={index} variant="outlined" label={option.toUpperCase()} {...getTagProps({ index })} />
                                         ))
                                     }
                                     renderInput={(params) => (
@@ -586,7 +675,7 @@ const RecordView = ({recordId,pid,session}) => {
                                             defaultValue={0}
                                             onChange={(event,newValue) => {
                                                 setRecordData({
-                                                    ...recordData,activityLevel:newValue
+                                                    ...recordData,activityLevel:newValue ? newValue : 0
                                                 })
                                             }}
                                             onChangeActive={(event,newHover) => {
@@ -620,11 +709,12 @@ const RecordView = ({recordId,pid,session}) => {
                                     limitTags={2}
                                     defaultValue={recordData.diet}
                                     disableCloseOnSelect
+                                    onChange={handleDietSelect}
                                     options={diet.map((option) => option.productName)}
                                     freeSolo
                                     renderTags={(value, getTagProps) =>
                                         value.map((option, index) => (
-                                            <Chip key={index} variant="outlined" label={option} {...getTagProps({ index })} />
+                                            <Chip key={index} variant="outlined" label={option.toUpperCase()} {...getTagProps({ index })} />
                                         ))
                                     }
                                     renderInput={(params) => (
@@ -653,12 +743,17 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container justifyContent="space-between" xs={12}>
                                 <Grid item xs={4} md={3}>
-                                    <Button fullWidth variant="contained" onClick={handleRecordSubmit}>Add Record</Button>
+                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0} loading={buttonLoading} onClick={handleRecordSubmit}>Add Record</LoadingButton>
                                 </Grid>
                                 <Grid item xs={3} md={2} textAlign="end" alignSelf="center">
                                     <Button fullWidth variant="contained" onClick={clearRecord}>Clear All</Button>
                                 </Grid>
                             </Grid>
+                            {errorMessage.message &&
+                                <Grid item xs={12}>
+                                    <Alert severity={errorMessage.type}>{errorMessage.message}</Alert>
+                                </Grid>
+                            }
                         </Grid>
                     </Paper>
                 </Grid>
@@ -711,14 +806,6 @@ const RecordView = ({recordId,pid,session}) => {
                                    setHormoneDialogOpen={setHormoneDialogOpen}
                                    hormoneDetailsDefault={hormoneDetailsDefault}/>
                 </Grid>
-                    <Grid item container xs={12}>
-                        <Grid item xs={6}>
-                            <img width={350} src={frontBodyImage} alt={`Front body image`}/>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <img width={350} src={backBodyImage} alt={`Back body Image`} />
-                        </Grid>
-                    </Grid>
                 </>
 
             }

@@ -11,7 +11,8 @@ const triggers = mongoose.Schema({
     },
     triggerName:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     }
 });
 

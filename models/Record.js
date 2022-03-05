@@ -23,29 +23,42 @@ const PainRecord = mongoose.Schema({
         type:Array,
     },
     activityLevel:{
-        type:Array,
+        type:Number,
     },
     medications:{
+        type:Array,
+    },
+    symptoms: {
         type:Array,
     },
     mood:{
         type:Number,
     },
     sleep:{
-        type:String,
+        type:Object,
     },
     diet:{
         type:Array,
     },
-    hormoneLevels:{
+    hormoneDetails:{
         type:Object,
     },
     description:{
         type:String,
     },
-    recordDate:{
+    frontBodyImage: {
+        type:String,
+    },
+    backBodyImage: {
+        type:String,
+    },
+    recordStartDate:{
         type:Date,
         required:true,
+    },
+    recordEndDate: {
+        type:Date,
+        required:true
     }
 });
 

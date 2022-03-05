@@ -11,7 +11,8 @@ const symptoms = mongoose.Schema({
     },
     symptomName:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     }
 });
 

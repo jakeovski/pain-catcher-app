@@ -94,7 +94,11 @@ const getRecord = async(req,res) => {
                             FSH:'',
                             populated:false
                         },
-                        description:''
+                        description:'',
+                        frontBodyImage:'',
+                        backBodyImage:'',
+                        recordStartDate:'',
+                        recordEndDate:''
                     },
                     options:{
                         diet:diet,

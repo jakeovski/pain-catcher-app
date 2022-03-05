@@ -11,7 +11,8 @@ const medication = mongoose.Schema({
     },
     medicationName:{
         type:String,
-        required:true
+        required:true,
+        unique:true
     }
 });
 
