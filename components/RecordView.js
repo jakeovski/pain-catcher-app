@@ -128,6 +128,8 @@ const RecordView = ({recordId,pid,session}) => {
 
     const DESCRIPTION_LIMIT = 250;
 
+    const TITLE_LIMIT = 50;
+
     const labels= {
         0:'No Pain',
         1:'Almost None',
@@ -330,9 +332,28 @@ const RecordView = ({recordId,pid,session}) => {
                             <Grid item xs={11} sx={{alignSelf: 'center', textAlign:'center'}}>
                                 <Typography fontWeight="bold" variant="h5">{`New record for ${selectedDates.startStr} - ${selectedDates.endStr}`}</Typography>
                             </Grid>
+                            <Grid item container xs={12}>
+                                <Grid item xs={12}>
+                                    <TextField
+                                        inputProps={{
+                                            maxLength: TITLE_LIMIT
+                                        }}
+                                        size="small"
+                                        value={recordData.title}
+                                        onChange={(e) => {
+                                            setRecordData({
+                                                ...recordData,title:e.target.value
+                                            })
+                                        }}
+                                        multiline
+                                        required
+                                        helperText={`${recordData.title.length}/${TITLE_LIMIT}`}
+                                        fullWidth variant="outlined" label="Title"/>
+                                </Grid>
+                            </Grid>
                             <Grid item container xs={12} sm={12} md={6} lg={6}  columnSpacing={1}>
                                 <Grid item xs="auto" sm="auto" md="auto" lg="auto">
-                                    <Typography variant="body1">Pain Level:</Typography>
+                                    <Typography variant="body1">Pain Level*:</Typography>
                                 </Grid>
                                 <Grid item container xs={9} sm={10} md={9} lg={9} columnSpacing={1}>
                                     <Grid item xs="auto" sm="auto" md="auto" lg="auto">
@@ -402,7 +423,8 @@ const RecordView = ({recordId,pid,session}) => {
                                     multiple
                                     id="medicationSelect"
                                     limitTags={2}
-                                    defaultValue={recordData.medications}
+                                    value={recordData.medications}
+                                    // defaultValue={recordData.medications}
                                     disableCloseOnSelect
                                     onChange={handleMedicationSelect}
                                     options={medication.map((option) => option.medicationName)}
@@ -458,7 +480,7 @@ const RecordView = ({recordId,pid,session}) => {
                                     id="triggersSelect"
                                     limitTags={2}
                                     onChange={handleTriggerSelect}
-                                    defaultValue={recordData.triggers}
+                                    value={recordData.triggers}
                                     disableCloseOnSelect
                                     options={triggers.map((option) => option.triggerName)}
                                     freeSolo
@@ -538,7 +560,7 @@ const RecordView = ({recordId,pid,session}) => {
                                     multiple
                                     id="symptomSelect"
                                     limitTags={2}
-                                    defaultValue={recordData.symptoms}
+                                    value={recordData.symptoms}
                                     disableCloseOnSelect
                                     onChange={handleSymptomSelect}
                                     options={symptoms.map((option) => option.symptomName)}
@@ -644,12 +666,6 @@ const RecordView = ({recordId,pid,session}) => {
                                                     <Typography fontSize="0.8rem">{`RDW: ${recordData.hormoneDetails.FBC.RDW}`}</Typography>
                                                 </Grid>
                                             }
-                                                {/*<Grid item xs={6}>*/}
-                                                {/*    /!*<Button variant="contained" size="small" onClick={handleHormoneDialogOpen}>Edit</Button>*!/*/}
-                                                {/*</Grid>*/}
-                                                {/*<Grid item xs={6}>*/}
-                                                {/*    <Button variant="contained" size="small" onClick={removeHormoneDetails}>Remove</Button>*/}
-                                                {/*</Grid>*/}
                                         </>
                                         :
                                         <Grid item xs={12}>
@@ -707,7 +723,7 @@ const RecordView = ({recordId,pid,session}) => {
                                     multiple
                                     id="dietSelect"
                                     limitTags={2}
-                                    defaultValue={recordData.diet}
+                                    value={recordData.diet}
                                     disableCloseOnSelect
                                     onChange={handleDietSelect}
                                     options={diet.map((option) => option.productName)}
@@ -726,7 +742,7 @@ const RecordView = ({recordId,pid,session}) => {
                                     )}
                                 />
                             </Grid>
-                            <Grid item container xs={12} xl={6}>
+                            <Grid item xs={12} xl={6}>
                                 <TextField
                                     inputProps={{
                                         maxLength: DESCRIPTION_LIMIT
@@ -743,7 +759,7 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container justifyContent="space-between" xs={12}>
                                 <Grid item xs={4} md={3}>
-                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0} loading={buttonLoading} onClick={handleRecordSubmit}>Add Record</LoadingButton>
+                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0 || !recordData.title} loading={buttonLoading} onClick={handleRecordSubmit}>Add Record</LoadingButton>
                                 </Grid>
                                 <Grid item xs={3} md={2} textAlign="end" alignSelf="center">
                                     <Button fullWidth variant="contained" onClick={clearRecord}>Clear All</Button>

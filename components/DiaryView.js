@@ -1,11 +1,23 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Button, CircularProgress, Grid, IconButton, Paper, Typography} from "@mui/material";
+import {
+    Alert,
+    Button, Chip,
+    CircularProgress,
+    Grid,
+    IconButton,
+    List,
+    ListItem,
+    ListItemText,
+    Paper,
+    Typography, useTheme
+} from "@mui/material";
 import {useRouter} from "next/router";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
+import luxon2Plugin from '@fullcalendar/luxon2';
 import {DateTime} from "luxon";
 import cookie from 'cookie-cutter';
 
@@ -13,6 +25,7 @@ import cookie from 'cookie-cutter';
 const DiaryView = ({pid, session}) => {
 
     const router = useRouter();
+    const theme = useTheme();
     const [loadingPage, setLoadingPage] = useState(true);
     const [diaryData, setDiaryData] = useState(null);
     const [recordsData, setRecordsData] = useState(null);
@@ -20,8 +33,10 @@ const DiaryView = ({pid, session}) => {
         startDate:null,
         endDate:null,
         startStr:null,
-        endStr:null
+        endStr:null,
+        allDay:null
     });
+    const [events, setEvents] = useState([]);
 
     const calendarRef = React.createRef();
     const handleGoBack = async() => {
@@ -49,6 +64,18 @@ const DiaryView = ({pid, session}) => {
             if(!res.data) {
                 router.push('/home');
             }else {
+                console.log(res.data.records);
+                let tempEvents = [];
+                for(const record of res.data.records) {
+                    tempEvents.push({
+                        id:record._id,
+                        allDay:record.allDay,
+                        title:record.title,
+                        start:record.recordStartDate,
+                        end:record.recordEndDate
+                    })
+                }
+                setEvents(tempEvents);
                 setDiaryData(res.data.diary[0]);
                 setRecordsData(res.data.records);
                 setLoadingPage(false);
@@ -65,14 +92,16 @@ const DiaryView = ({pid, session}) => {
                 startDate: startDate,
                 endDate: endDate,
                 startStr: startDate.toFormat('dd/LL/yyyy'),
-                endStr: endDate.toFormat('dd/LL/yyyy')
+                endStr: endDate.toFormat('dd/LL/yyyy'),
+                allDay: true
             })
         }else{
             setSelectedDates({
                 startDate: startDate,
                 endDate: endDate,
                 startStr: startDate.toFormat('dd/LL/yyyy HH:mm'),
-                endStr: endDate.toFormat('dd/LL/yyyy HH:mm')
+                endStr: endDate.toFormat('dd/LL/yyyy HH:mm'),
+                allDay: false
             })
         }
     }
@@ -131,11 +160,22 @@ const DiaryView = ({pid, session}) => {
                                     }
                                 }}>
                                     <FullCalendar
-                                        plugins={[ dayGridPlugin, interactionPlugin, timeGridPlugin ]}
+                                        plugins={[ dayGridPlugin, interactionPlugin, timeGridPlugin, luxon2Plugin]}
                                         initialView="dayGridMonth"
                                         height={600}
                                         ref={calendarRef}
                                         firstDay={1}
+                                        views={{
+                                            timeGridWeek:{
+                                                dayHeaderFormat:'ccc dd/LL',
+                                                titleFormat:'{{d} LLL}, yyyy'
+                                            },
+                                            timeGridDay:{
+                                                titleFormat:'d LLLL yyyy'
+                                            }
+                                        }}
+                                        events={events}
+                                        eventColor={theme.palette.primary.dark}
                                         headerToolbar={{
                                             left:'prev,next today',
                                             center:'title',
@@ -179,7 +219,14 @@ const DiaryView = ({pid, session}) => {
                                 }
                                 <Grid item xs={12}>
                                     {recordsData.length > 0 ?
-                                        <h1>Hi</h1>
+                                        <>
+                                            <List>
+                                                {recordsData.map((data) => {
+                                                    return <Chip variant="outlined" key={data._id} label={`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
+                                                    />
+                                                })}
+                                            </List>
+                                        </>
                                         :
                                         <Alert severity="info">No Records exist yet</Alert>
                                     }

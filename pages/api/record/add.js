@@ -39,6 +39,7 @@ const addRecord = async(req,res) => {
         await Record.create({
             diaryId:diaryId,
             painLevel:record.painLevel,
+            title:record.title,
             areas:bodyAreas,
             triggers:record.triggers,
             activityLevel:record.activityLevel,
@@ -51,7 +52,8 @@ const addRecord = async(req,res) => {
             frontBodyImage:frontImage,
             backBodyImage:backImage,
             recordStartDate:DateTime.fromISO(dates.startDate),
-            recordEndDate:DateTime.fromISO(dates.endDate)
+            recordEndDate:DateTime.fromISO(dates.endDate),
+            allDay:dates.allDay
         });
 
         console.log("Successfully created the record");

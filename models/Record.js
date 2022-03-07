@@ -12,6 +12,10 @@ const PainRecord = mongoose.Schema({
         type:String,
         required:true,
     },
+    title:{
+        type:String,
+        required:true
+    },
     painLevel:{
         type:Number,
         required:true,
@@ -58,6 +62,10 @@ const PainRecord = mongoose.Schema({
     },
     recordEndDate: {
         type:Date,
+        required:true
+    },
+    allDay:{
+        type:Boolean,
         required:true
     }
 });

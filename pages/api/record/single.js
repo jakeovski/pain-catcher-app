@@ -62,6 +62,7 @@ const getRecord = async(req,res) => {
                     diaryId: diary._id,
                     record: {
                         painLevel:0,
+                        title:'',
                         areas:[],
                         triggers:[],
                         symptoms:[],
