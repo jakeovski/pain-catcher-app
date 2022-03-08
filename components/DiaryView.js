@@ -20,6 +20,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import luxon2Plugin from '@fullcalendar/luxon2';
 import {DateTime} from "luxon";
 import cookie from 'cookie-cutter';
+import RecordPreview from "../helper/RecordPreview";
 
 //TODO:Change date format in calendar for months view to be 25/1 instead of 1/25
 const DiaryView = ({pid, session}) => {
@@ -37,10 +38,23 @@ const DiaryView = ({pid, session}) => {
         allDay:null
     });
     const [events, setEvents] = useState([]);
+    const [recordPreview, setRecordPreview] = useState(null);
+    const [recordsWithinDateRange,setRecordsWithinDateRange] = useState([]);
+    const [buttonLoading,setButtonLoading] = useState(false);
+    const [calendarEditable,setCalendarEditable] = useState(true);
+    const [errorMessage,setErrorMessage] = useState({
+        type:'',
+        message:''
+    })
 
-    const calendarRef = React.createRef();
+    const calendarRef = React.useRef(null);
     const handleGoBack = async() => {
+        setLoadingPage(true);
         await router.push('/home');
+    }
+
+    const handleRecordPreview = (data) => () => {
+        setRecordPreview(data);
     }
 
     useEffect(() => {
@@ -104,6 +118,19 @@ const DiaryView = ({pid, session}) => {
                 allDay: false
             })
         }
+        if (recordsData) {
+            let recordDateRange = [];
+            for(const record of recordsData) {
+                if(DateTime.fromISO(record.recordStartDate) >= startDate) {
+                    if (DateTime.fromISO(record.recordEndDate) <= endDate){
+                        console.log('true');
+                        recordDateRange.push(record);
+                    }
+                }
+            }
+            setRecordsWithinDateRange(recordDateRange);
+        }
+        setRecordPreview(null);
     }
 
     const clearDateSelection = () => {
@@ -111,14 +138,83 @@ const DiaryView = ({pid, session}) => {
             startDate: null,
             endDate: null,
             startStr: null,
-            endStr: null
-        })
+            endStr: null,
+            allDay: null
+        });
+        setRecordsWithinDateRange([]);
         calendarRef.current.getApi().unselect();
     }
 
     const handleRecordNavigation = async () => {
-        cookie.set('RecordDates',JSON.stringify(selectedDates));
-        await router.push(`/diary/${pid}/new`);
+        setButtonLoading(true);
+        if (recordPreview) {
+            await router.push(`/diary/${pid}/${recordPreview._id}`);
+        }else {
+            console.log(selectedDates);
+            cookie.set('RecordDates',JSON.stringify(selectedDates));
+            await router.push(`/diary/${pid}/new`);
+        }
+        setButtonLoading(false);
+    }
+
+    const handleEventClick = (info) => {
+        clearDateSelection();
+        for(const record of recordsData) {
+            if (record._id === info.event.id) {
+                setRecordPreview(record);
+                break;
+            }
+        }
+    }
+
+    const handleEventChange = async(info) => {
+        console.log(info.event);
+        setButtonLoading(true);
+        setCalendarEditable(false);
+        let endDate;
+        if (!info.event.end) {
+            if(info.event.allDay) {
+                endDate = DateTime.fromISO(info.event.startStr).plus({days:1});
+            }else {
+                endDate = DateTime.fromISO(info.event.startStr).plus({hours:1});
+            }
+        }
+        const res = await fetch('/api/record/editTime',{
+            method:'PATCH',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                userId:session.user.id,
+                diaryId:pid,
+                recordId:info.event.id,
+                newStartDate:info.event.start,
+                newEndDate:info.event.end ? info.event.end : endDate,
+                newAllDay:info.event.allDay
+            })
+        });
+
+        const data = await res.json();
+        if(data.type) {
+            setErrorMessage({
+                type: data.type,
+                message: data.message
+            })
+        }
+        let tempEvents = [];
+        for(const record of data.data.records) {
+            tempEvents.push({
+                id:record._id,
+                allDay:record.allDay,
+                title:record.title,
+                start:record.recordStartDate,
+                end:record.recordEndDate
+            })
+        }
+        setEvents(tempEvents);
+        setRecordsData(data.data.records);
+        setButtonLoading(false);
+        setCalendarEditable(true);
     }
 
     return (
@@ -165,6 +261,8 @@ const DiaryView = ({pid, session}) => {
                                         height={600}
                                         ref={calendarRef}
                                         firstDay={1}
+                                        editable={calendarEditable}
+                                        eventChange={handleEventChange}
                                         views={{
                                             timeGridWeek:{
                                                 dayHeaderFormat:'ccc dd/LL',
@@ -175,6 +273,7 @@ const DiaryView = ({pid, session}) => {
                                             }
                                         }}
                                         events={events}
+                                        eventClick={handleEventClick}
                                         eventColor={theme.palette.primary.dark}
                                         headerToolbar={{
                                             left:'prev,next today',
@@ -219,22 +318,47 @@ const DiaryView = ({pid, session}) => {
                                 }
                                 <Grid item xs={12}>
                                     {recordsData.length > 0 ?
-                                        <>
+                                        recordPreview ?
+                                            <RecordPreview
+                                                recordPreview={recordPreview}
+                                                setRecordPreview={setRecordPreview}
+                                                handleRecordNavigation={handleRecordNavigation}
+                                                buttonLoading={buttonLoading}
+                                            />
+                                            :
+                                            selectedDates.startDate ?
+                                                recordsWithinDateRange.length !== 0 ?
+                                                    <List>
+                                                        {recordsWithinDateRange.map((data) => {
+                                                            return <Button onClick={handleRecordPreview(data)}
+                                                                           size="small"
+                                                                         variant="outlined" key={data._id}
+                                                            >{`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
+                                                            </Button>
+                                                        })}
+                                                    </List>
+                                                    :
+                                                    <Alert severity="info">No Records exist for the date range</Alert>
+                                                :
                                             <List>
                                                 {recordsData.map((data) => {
-                                                    return <Chip variant="outlined" key={data._id} label={`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
-                                                    />
+                                                    return <Button size="small" onClick={handleRecordPreview(data)}
+                                                                   fullWidth
+                                                                 variant="outlined" key={data._id}>
+                                                                 {`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
+                                                    </Button>
                                                 })}
                                             </List>
-                                        </>
                                         :
                                         <Alert severity="info">No Records exist yet</Alert>
                                     }
                                 </Grid>
                                 <Grid item xs={12} sx={{paddingTop:'1vh'}}>
-                                    <Button fullWidth variant="contained" onClick={handleRecordNavigation} disabled={selectedDates.startDate === null}>
-                                        Add new pain record
-                                    </Button>
+                                    {!recordPreview &&
+                                        <Button fullWidth variant="contained" onClick={handleRecordNavigation} disabled={selectedDates.startDate === null}>
+                                            Add new pain record
+                                        </Button>
+                                    }
                                 </Grid>
                                     {selectedDates.startDate &&
                                     <Grid item xs={12}>
@@ -243,6 +367,11 @@ const DiaryView = ({pid, session}) => {
                                         </Button>
                                     </Grid>
                                     }
+                                    <Grid item xs={12}>
+                                        {errorMessage.type &&
+                                            <Alert severity={errorMessage.type}>{errorMessage.message}</Alert>
+                                        }
+                                    </Grid>
                                 </Grid>
                             </form>
                         </Paper>

@@ -1,26 +1,23 @@
 import {getSession} from "next-auth/react";
 import Connection from "../../../config/dbConnection";
 import Record from "../../../models/Record";
-import {DateTime} from "luxon";
 import Triggers from "../../../models/Triggers";
 import Symptoms from "../../../models/Symptoms";
 import Medication from "../../../models/Medication";
 import Diet from "../../../models/Diet";
-import Diary from "../../../models/Diary";
 
 
-const addRecord = async(req,res) => {
-    if (req.method !== 'POST') {
+const editRecord = async(req,res) => {
+    if (req.method !== 'PATCH') {
         return req.status(401).json({
             data:undefined,
             type:'error',
-            message:'Only POST method is allowed'
+            message:'Only PATCH method is allowed'
         });
     }
-    console.log(req.body);
 
     try{
-        const {userId,diaryId,record,bodyAreas,frontImage,backImage,dates} = req.body;
+        const {userId,diaryId,record,bodyAreas,frontImage,backImage} = req.body;
         const session = await getSession(res);
 
         if (userId !== session.user.id) {
@@ -33,10 +30,10 @@ const addRecord = async(req,res) => {
 
         await Connection();
 
-        console.log(req.body.dates);
-
-        await Record.create({
-            diaryId:diaryId,
+        await Record.updateOne({
+            _id:record._id,
+            diaryId:diaryId
+        },{
             painLevel:record.painLevel,
             title:record.title,
             areas:bodyAreas,
@@ -49,14 +46,11 @@ const addRecord = async(req,res) => {
             mood:record.mood,
             hormoneDetails:record.hormoneDetails,
             description:record.description,
-            frontBodyImage:frontImage,
-            backBodyImage:backImage,
-            recordStartDate:DateTime.fromISO(dates.startDate),
-            recordEndDate:DateTime.fromISO(dates.endDate),
-            allDay:dates.allDay
+            frontBodyImage:frontImage ? frontImage : record.frontBodyImage,
+            backBodyImage:backImage ? backImage : record.backBodyImage
         });
 
-        console.log("Successfully created the record");
+        console.log("Successfully updated the record");
         console.log("Saving the option preferences...");
 
         if(record.triggers.length > 0) {
@@ -104,20 +98,13 @@ const addRecord = async(req,res) => {
             console.log("Successfully added new products");
         }
 
-        await Diary.updateOne({
-            _id:diaryId
-        },{
-            lastRecord:DateTime.now(),
-            $inc:{numberOfRecords:1}
-        })
-
         console.log('The operation was successful');
+
         return res.status(200).json({
             data:undefined,
             type:'',
             message:'Success'
         })
-
 
     }catch (error) {
         console.log(error);
@@ -128,4 +115,13 @@ const addRecord = async(req,res) => {
         })
     }
 }
-export default addRecord;
+
+export default editRecord;
+
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '5mb',
+        },
+    },
+}

@@ -30,6 +30,8 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import HormoneDialog from "../helper/HormoneDialog";
 import EditIcon from '@mui/icons-material/Edit';
 import {useScreenshot} from 'use-react-screenshot'
+import {DateTime} from "luxon";
+import Image from 'next/image'
 
 const filter = createFilterOptions();
 
@@ -58,6 +60,7 @@ const RecordView = ({recordId,pid,session}) => {
     const [buttonLoading,setButtonLoading] = useState(false);
     const frontBodyRef = useRef('front');
     const backBodyRef = useRef('back');
+    const [bodyPopulated,setBodyPopulated] = useState(false);
     const [frontBodyImage,setFrontBodyImage] = useScreenshot({
         type:"image/jpeg",
         quality:1.0
@@ -109,23 +112,7 @@ const RecordView = ({recordId,pid,session}) => {
         populated:false
     };
 
-    const recordDefault = {
-        painLevel:0,
-        areas:[],
-        triggers:[],
-        symptoms:[],
-        activityLevel:0,
-        medications:[],
-        mood:0,
-        sleep:{
-            hours:'',
-            minutes:''
-        },
-        diet:[],
-        hormoneDetails:hormoneDetailsDefault,
-        description:''
-    }
-
+    console.log(selectedDates);
     const DESCRIPTION_LIMIT = 250;
 
     const TITLE_LIMIT = 50;
@@ -208,6 +195,8 @@ const RecordView = ({recordId,pid,session}) => {
                 setSymptoms(res.data.options.symptoms);
                 setTriggers(res.data.options.triggers);
                 setHormoneDetails(res.data.record.hormoneDetails);
+                setBodyAreas(res.data.record.areas);
+                res.data.record.frontBodyImage ? setBodyPopulated(true) : setBodyPopulated(false);
                 setPageLoading(false);
             }
         })
@@ -224,10 +213,12 @@ const RecordView = ({recordId,pid,session}) => {
     }
 
     const changeBody = () => {
-        if(bodyFrontToggle) {
-            setFrontBodyImage(frontBodyRef.current);
-        }else {
-            setBackBodyImage(backBodyRef.current);
+        if (!bodyPopulated){
+            if(bodyFrontToggle) {
+                setFrontBodyImage(frontBodyRef.current);
+            }else {
+                setBackBodyImage(backBodyRef.current);
+            }
         }
         setBodyFrontToggle((prev) => !prev);
     }
@@ -248,55 +239,79 @@ const RecordView = ({recordId,pid,session}) => {
 
     const clearRecord = () => {
         setHormoneDetails(hormoneDetailsDefault);
-        setRecordData(recordDefault);
+        if (recordData._id) {
+            setRecordData({
+                ...recordData,
+                painLevel:recordDefault.painLevel,
+                title:recordDefault.title,
+                areas:recordDefault.areas,
+                triggers:recordDefault.triggers,
+                symptoms:recordDefault.symptoms,
+                activityLevel:recordDefault.activityLevel,
+                medications:recordDefault.medications,
+                mood:recordDefault.mood,
+                sleep:recordDefault.sleep,
+                diet:recordDefault.diet,
+                hormoneDetails:hormoneDetailsDefault,
+                description:recordDefault.description
+            });
+        }else {
+            setRecordData(recordDefault);
+        }
     }
-
-    const returnBase64 = async (toggle,bodyPart) => {
-        if (toggle && bodyPart === 'front') {
-            setFrontBodyImage(frontBodyRef.current).then((res) => {
-                return res;
-            });
-        }
-        if (!toggle && bodyPart === 'front') {
-            return frontBodyImage;
-        }
-        if (toggle && bodyPart === 'back') {
-            return backBodyImage;
-        }
-        if (!toggle && bodyPart === 'back') {
-            setBackBodyImage(backBodyRef.current).then((res) => {
-                return res;
-            });
-        }
+    const recordDefault = {
+        painLevel:0,
+        title:'',
+        areas:[],
+        triggers:[],
+        symptoms:[],
+        activityLevel:0,
+        medications:[],
+        mood:0,
+        sleep:{
+            hours:'',
+            minutes:''
+        },
+        diet:[],
+        hormoneDetails:hormoneDetailsDefault,
+        description:''
     }
 
     const handleRecordSubmit = async() => {
-
-        if(recordData.painLevel === 0) {
-            setErrorMessage({
-                type:'warning',
-                message: 'At least Pain Level should be specified!'
-            })
-        }else {
             setButtonLoading(true);
-            // const frontBase64 = await returnBase64(bodyFrontToggle,'front');
-            // const backBase64 = await returnBase64(bodyFrontToggle,'back');
-
-            const res = await fetch('/api/record/add',{
-                method:'POST',
-                headers:{
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: session.user.id,
-                    diaryId:pid,
-                    record:recordData,
-                    bodyAreas:bodyAreas,
-                    dates:selectedDates,
-                    frontImage: bodyFrontToggle ? await setFrontBodyImage(frontBodyRef.current) : await frontBodyImage,
-                    backImage: bodyFrontToggle ? await backBodyImage : await setBackBodyImage(backBodyRef.current)
+            let res;
+            if(recordData._id) {
+                res = await fetch('/api/record/edit',{
+                    method:'PATCH',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify({
+                        userId:session.user.id,
+                        diaryId:pid,
+                        record:recordData,
+                        bodyAreas:bodyAreas,
+                        frontImage: bodyPopulated ? recordData.frontBodyImage : bodyFrontToggle ? await setFrontBodyImage(frontBodyRef.current) : await frontBodyImage,
+                        backImage: bodyPopulated ? recordData.backBodyImage : bodyFrontToggle ? await backBodyImage : await setBackBodyImage(backBodyRef.current)
+                    })
                 })
-            });
+            }else {
+                res = await fetch('/api/record/add',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: session.user.id,
+                        diaryId:pid,
+                        record:recordData,
+                        bodyAreas:bodyAreas,
+                        dates:selectedDates,
+                        frontImage: bodyFrontToggle ? await setFrontBodyImage(frontBodyRef.current) : await frontBodyImage,
+                        backImage: bodyFrontToggle ? await backBodyImage : await setBackBodyImage(backBodyRef.current)
+                    })
+                });
+            }
 
             const data = await res.json();
             if (data.type) {
@@ -308,7 +323,12 @@ const RecordView = ({recordId,pid,session}) => {
             }else {
                 router.push(`/diary/${diaryId}`);
             }
-        }
+    }
+
+    const handleBodyChange = () => {
+        setBodyAreas([]);
+        setBodyFrontToggle(true);
+        setBodyPopulated(false);
     }
 
     return(
@@ -330,7 +350,11 @@ const RecordView = ({recordId,pid,session}) => {
                                 </IconButton>
                             </Grid>
                             <Grid item xs={11} sx={{alignSelf: 'center', textAlign:'center'}}>
-                                <Typography fontWeight="bold" variant="h5">{`New record for ${selectedDates.startStr} - ${selectedDates.endStr}`}</Typography>
+                                {recordData._id ?
+                                    <Typography fontWeight="bold" variant="h5">{`Record for ${DateTime.fromISO(recordData.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(recordData.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}</Typography>
+                                    :
+                                    <Typography fontWeight="bold" variant="h5">{`New record for ${selectedDates.startStr} - ${selectedDates.endStr}`}</Typography>
+                                }
                             </Grid>
                             <Grid item container xs={12}>
                                 <Grid item xs={12}>
@@ -404,6 +428,11 @@ const RecordView = ({recordId,pid,session}) => {
                                                 bodyAreas.map((data,index) => {
                                                     return <Grid item key={index}><Chip label={data.name}/></Grid>
                                                 })
+                                            }
+                                            {bodyPopulated &&
+                                                <Grid item>
+                                                    <Button variant="contained" onClick={handleBodyChange}>Change</Button>
+                                                </Grid>
                                             }
                                             </>
                                         :
@@ -759,10 +788,12 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container justifyContent="space-between" xs={12}>
                                 <Grid item xs={4} md={3}>
-                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0 || !recordData.title} loading={buttonLoading} onClick={handleRecordSubmit}>Add Record</LoadingButton>
+                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0 || !recordData.title} loading={buttonLoading} onClick={handleRecordSubmit}>
+                                        {recordData._id ? 'Confirm' : 'Add Record'}
+                                    </LoadingButton>
                                 </Grid>
                                 <Grid item xs={3} md={2} textAlign="end" alignSelf="center">
-                                    <Button fullWidth variant="contained" onClick={clearRecord}>Clear All</Button>
+                                    <Button fullWidth variant="contained" onClick={clearRecord}>Clear</Button>
                                 </Grid>
                             </Grid>
                             {errorMessage.message &&
@@ -785,12 +816,25 @@ const RecordView = ({recordId,pid,session}) => {
                                 <Typography fontWeight="bold" variant="h6">Bodymap</Typography>
                             </Grid>
                             <Grid item container xs={12} display="flex" justifyContent="center" height={622}>
+                                {bodyPopulated ?
+                                    bodyFrontToggle ?
+                                        <Box>
+                                            <Image src={recordData.frontBodyImage} alt="FrontBodyImage" width={350} height={622}/>
+                                        </Box>
+                                        :
+                                        <Box>
+                                            <Image src={recordData.backBodyImage} alt="BackBodyImage" width={350} height={622}/>
+                                        </Box>
+                                    :
+                                    <>
                                         <Box sx={{display:bodyFrontToggle ? 'block' : 'none'}}  ref={frontBodyRef}>
                                             <FrontBody handleSelect={handleSelect} toggleFront={bodyFrontToggle}/>
                                         </Box>
                                         <Box sx={{visibility:bodyFrontToggle ? 'hidden' : 'visible'}} ref={backBodyRef}>
                                             <BackBody handleSelect={handleSelect} toggleFront={bodyFrontToggle}/>
                                         </Box>
+                                    </>
+                                }
                             </Grid>
                             <Grid item container xs={12} justifyContent="space-around">
                                 <Grid item xs={1}>
