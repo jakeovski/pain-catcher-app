@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CustomDialog from "../helper/CustomDialog";
 import {useRouter} from "next/router";
+import {LoadingButton} from "@mui/lab";
 
 const Dashboard = ({session}) => {
     const theme = useTheme();
@@ -160,6 +161,7 @@ const Dashboard = ({session}) => {
     }
 
     const handleDiaryNavigation = async(id) => {
+        setNewDiaryLoading(true);
         await router.push(`/diary/${id}`);
     }
 
@@ -221,7 +223,7 @@ const Dashboard = ({session}) => {
                                                             <Typography>Number of Records: {data.numberOfRecords}</Typography>
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <Typography>Last record: No Records</Typography>
+                                                            <Typography>Last record: {data.lastRecord ? DateTime.fromISO(data.lastRecord).toFormat('dd/LL/yyyy HH:mm') : 'No Records'}</Typography>
                                                         </Grid>
                                                     </Grid>
                                                     <Grid container item xs={12} justifyContent="space-between">
@@ -363,11 +365,11 @@ const Dashboard = ({session}) => {
 
                         </Grid>
 
-                        <Button type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>
+                        <LoadingButton loading={newDiaryLoading} type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>
                             {modifyDiary ? `Modify Diary`
                                 : `Create New Diary`
                             }
-                        </Button>
+                        </LoadingButton>
                         {
                             modifyDiary &&
                             <Button variant="contained" fullWidth sx={{marginTop:'2vh'}} onClick={handleDisableModify}>

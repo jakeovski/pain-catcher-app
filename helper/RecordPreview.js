@@ -8,7 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import {LoadingButton} from "@mui/lab";
 
 
-const RecordPreview = ({recordPreview,setRecordPreview,handleRecordNavigation,buttonLoading}) => {
+const RecordPreview = ({recordPreview,setRecordPreview,handleRecordNavigation,buttonLoading,handleDeleteDialogOpen}) => {
 
 
     const getHearts = () => {
@@ -94,7 +94,7 @@ const RecordPreview = ({recordPreview,setRecordPreview,handleRecordNavigation,bu
                     </LoadingButton>
                 </Grid>
                 <Grid item xs={4} md={6} textAlign="end">
-                    <LoadingButton loading={buttonLoading} variant="contained" endIcon={<DeleteIcon/>}>
+                    <LoadingButton loading={buttonLoading} variant="contained" endIcon={<DeleteIcon/>} onClick={() => handleDeleteDialogOpen(recordPreview.title)}>
                         Delete
                     </LoadingButton>
                 </Grid>

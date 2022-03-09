@@ -1,20 +1,21 @@
 import {getSession} from "next-auth/react";
 import Connection from "../../../config/dbConnection";
-import Diary from "../../../models/Diary";
 import Record from "../../../models/Record";
+import Diary from "../../../models/Diary";
+import {DateTime} from "luxon";
 
 
-const getRecords = async(req,res) => {
-    if (req.method !== 'POST') {
+const deleteRecord = async(req,res) => {
+    if (req.method !== 'DELETE') {
         return req.status(401).json({
-           data:undefined,
+            data:undefined,
             type:'error',
-            message:'Only GET method is allowed'
+            message:'Only DELETE method is allowed'
         });
     }
 
     try{
-        const {diaryId,userId} = req.body;
+        const {recordId,userId,diaryId} = req.body;
         const session = await getSession(res);
 
         if (userId !== session.user.id) {
@@ -27,40 +28,37 @@ const getRecords = async(req,res) => {
 
         await Connection();
 
-        const diary = await Diary.find({
-            userId:userId,
-            _id:diaryId
+        await Record.deleteOne({
+            _id:recordId
         });
-
-        if (diary.length === 0) {
-            return res.status(401).json({
-                data:undefined,
-                type:'error',
-                message:'Diary does not exist'
-            });
-        }
 
         const records = await Record.find({
             diaryId:diaryId
         }).select('-backBodyImage -frontBodyImage');
 
+        await Diary.updateOne({
+            _id:diaryId
+        },{
+            $inc:{numberOfRecords:-1}
+        })
+
+        console.log(records);
         return res.status(200).json({
             data:{
-                diary:diary,
                 records:records
             },
             type:'',
             message:'Success'
         });
 
-    }catch (error){
-        console.log(error);
+    }catch (err) {
+        console.log(err);
         return res.status(500).json({
             data:undefined,
             type:'error',
-            message:'Only GET method is allowed'
+            message:'Internal Server Error'
         })
     }
 }
 
-export default getRecords;
+export default deleteRecord;

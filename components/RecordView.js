@@ -32,8 +32,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import {useScreenshot} from 'use-react-screenshot'
 import {DateTime} from "luxon";
 import Image from 'next/image'
-
-const filter = createFilterOptions();
+import FrontImageDefault from '../public/FrontBody.png';
+import BackImageDefault from '../public/BackBody.png';
 
 const RecordView = ({recordId,pid,session}) => {
 
@@ -48,7 +48,7 @@ const RecordView = ({recordId,pid,session}) => {
         type:'',
         message:''
     })
-    const [selectedDates,setSelectedDates] = useState(JSON.parse(cookie.get('RecordDates')));
+    const [selectedDates,setSelectedDates] = useState(JSON.parse(localStorage.getItem('RecordDates')));
     const [diet,setDiet] = useState(null);
     const [medication,setMedication] = useState(null);
     const [symptoms,setSymptoms] = useState(null);
@@ -112,7 +112,6 @@ const RecordView = ({recordId,pid,session}) => {
         populated:false
     };
 
-    console.log(selectedDates);
     const DESCRIPTION_LIMIT = 250;
 
     const TITLE_LIMIT = 50;
@@ -437,9 +436,15 @@ const RecordView = ({recordId,pid,session}) => {
                                             </>
                                         :
                                         <>
-                                            <Grid item>
-                                                <Typography sx={{display: {xs:'none',lg:'block'}, opacity:0.55}}>Select the areas on a bodymap</Typography>
-                                            </Grid>
+                                            {bodyPopulated ?
+                                                <Grid item>
+                                                    <Button variant="contained" onClick={handleBodyChange}>Change</Button>
+                                                </Grid>
+                                                :
+                                                <Grid item>
+                                                    <Typography sx={{display: {xs:'none',lg:'block'}, opacity:0.55}}>Select the areas on a bodymap</Typography>
+                                                </Grid>
+                                            }
                                             <Grid item>
                                             <Button sx={{display:{xs:'block',lg:'none'}}} size="small" variant="contained">Select</Button>
                                             </Grid>
@@ -531,7 +536,7 @@ const RecordView = ({recordId,pid,session}) => {
                                 <Grid item xs="auto" sm="auto" md="auto">
                                     <Typography>Sleep:</Typography>
                                 </Grid>
-                                    <Grid item xs="auto" sm="auto" md={3}>
+                                    <Grid item xs="auto" sm="auto" md={4}>
                                         <TextField
                                             fullWidth
                                             size="small"
@@ -557,7 +562,7 @@ const RecordView = ({recordId,pid,session}) => {
                                             }}
                                         />
                                     </Grid>
-                                    <Grid item xs="auto" sm="auto" md={3}>
+                                    <Grid item xs="auto" sm="auto" md={4}>
                                         <TextField
                                             fullWidth
                                             size="small"
@@ -819,11 +824,11 @@ const RecordView = ({recordId,pid,session}) => {
                                 {bodyPopulated ?
                                     bodyFrontToggle ?
                                         <Box>
-                                            <Image src={recordData.frontBodyImage} alt="FrontBodyImage" width={350} height={622}/>
+                                            <Image src={recordData.frontBodyImage ? recordData.frontBodyImage : FrontImageDefault} alt="FrontBodyImage" width={350} height={622}/>
                                         </Box>
                                         :
                                         <Box>
-                                            <Image src={recordData.backBodyImage} alt="BackBodyImage" width={350} height={622}/>
+                                            <Image src={recordData.backBodyImage ? recordData.backBodyImage : BackImageDefault} alt="BackBodyImage" width={350} height={622}/>
                                         </Box>
                                     :
                                     <>

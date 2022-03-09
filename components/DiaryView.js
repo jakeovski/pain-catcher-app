@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     Alert,
     Button, Chip,
@@ -21,6 +21,8 @@ import luxon2Plugin from '@fullcalendar/luxon2';
 import {DateTime} from "luxon";
 import cookie from 'cookie-cutter';
 import RecordPreview from "../helper/RecordPreview";
+import CustomDialog from "../helper/CustomDialog";
+import {LoadingButton} from "@mui/lab";
 
 //TODO:Change date format in calendar for months view to be 25/1 instead of 1/25
 const DiaryView = ({pid, session}) => {
@@ -46,8 +48,12 @@ const DiaryView = ({pid, session}) => {
         type:'',
         message:''
     })
+    const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
+    const [dialogTitleText,setDialogTitleText] = useState(null);
+    const [dialogContentText,setDialogContentText] = useState(null);
 
     const calendarRef = React.useRef(null);
+
     const handleGoBack = async() => {
         setLoadingPage(true);
         await router.push('/home');
@@ -58,6 +64,7 @@ const DiaryView = ({pid, session}) => {
     }
 
     useEffect(() => {
+        let abortController = new AbortController();
         async function getRecords() {
             const res = await fetch('/api/record', {
                 method: 'POST',
@@ -74,28 +81,29 @@ const DiaryView = ({pid, session}) => {
         }
 
         setLoadingPage(true);
-        getRecords().then((res) => {
-            if(!res.data) {
-                router.push('/home');
-            }else {
-                console.log(res.data.records);
-                let tempEvents = [];
-                for(const record of res.data.records) {
-                    tempEvents.push({
-                        id:record._id,
-                        allDay:record.allDay,
-                        title:record.title,
-                        start:record.recordStartDate,
-                        end:record.recordEndDate
-                    })
+        getRecords().then(data => {
+                if (!data.data) {
+                    router.push('/home');
+                }else {
+                    let tempEvents = [];
+                    for(const record of data.data.records) {
+                        tempEvents.push({
+                            id:record._id,
+                            allDay:record.allDay,
+                            title:record.title,
+                            start:record.recordStartDate,
+                            end:record.recordEndDate
+                        })
+                    }
+                    setEvents(tempEvents);
+                    setDiaryData(data.data.diary[0]);
+                    setRecordsData(data.data.records);
+                    setLoadingPage(false);
                 }
-                setEvents(tempEvents);
-                setDiaryData(res.data.diary[0]);
-                setRecordsData(res.data.records);
-                setLoadingPage(false);
+            return () => {
+                abortController.abort();
             }
-        })
-
+        });
     },[pid, router, session.user.id]);
 
     const handleDateSelected = (info) => {
@@ -123,7 +131,6 @@ const DiaryView = ({pid, session}) => {
             for(const record of recordsData) {
                 if(DateTime.fromISO(record.recordStartDate) >= startDate) {
                     if (DateTime.fromISO(record.recordEndDate) <= endDate){
-                        console.log('true');
                         recordDateRange.push(record);
                     }
                 }
@@ -151,10 +158,56 @@ const DiaryView = ({pid, session}) => {
             await router.push(`/diary/${pid}/${recordPreview._id}`);
         }else {
             console.log(selectedDates);
-            cookie.set('RecordDates',JSON.stringify(selectedDates));
+            localStorage.setItem("RecordDates",JSON.stringify(selectedDates))
             await router.push(`/diary/${pid}/new`);
         }
         setButtonLoading(false);
+    }
+
+    const handleRecordDelete = async(recordId) => {
+        setButtonLoading(true);
+        setDeleteDialogOpen(false);
+
+        const res = await fetch('/api/record/delete', {
+            method:'DELETE',
+            headers:{
+                'Content-Type':'application/json'
+            },
+            body: JSON.stringify({
+                userId:session.user.id,
+                diaryId:pid,
+                recordId:recordId
+            })
+        });
+
+        const data = await res.json();
+        if(data.type) {
+            setErrorMessage({
+                type: data.type,
+                message: data.message
+            })
+        }else {
+            let tempEvents = [];
+            console.log(data);
+            for(const record of data.data.records) {
+                tempEvents.push({
+                    id:record._id,
+                    allDay:record.allDay,
+                    title:record.title,
+                    start:record.recordStartDate,
+                    end:record.recordEndDate
+                })
+            }
+            setEvents(tempEvents);
+            setRecordsData(data.data.records);
+            setButtonLoading(false);
+        }
+    }
+
+    const handleDeleteDialogOpen = (name) => {
+        setDialogTitleText(`Delete ${name}?`);
+        setDialogContentText(`${name} will be permanently deleted.`);
+        setDeleteDialogOpen(true);
     }
 
     const handleEventClick = (info) => {
@@ -168,7 +221,6 @@ const DiaryView = ({pid, session}) => {
     }
 
     const handleEventChange = async(info) => {
-        console.log(info.event);
         setButtonLoading(true);
         setCalendarEditable(false);
         let endDate;
@@ -200,21 +252,35 @@ const DiaryView = ({pid, session}) => {
                 type: data.type,
                 message: data.message
             })
+        }else {
+            let tempEvents = [];
+            let recordDateRange = [];
+            for(const record of data.data.records) {
+                tempEvents.push({
+                    id:record._id,
+                    allDay:record.allDay,
+                    title:record.title,
+                    start:record.recordStartDate,
+                    end:record.recordEndDate
+                })
+                if (selectedDates.startDate && selectedDates.endDate && recordsWithinDateRange.length > 0) {
+                    if(DateTime.fromISO(record.recordStartDate) >= selectedDates.startDate) {
+                        if (DateTime.fromISO(record.recordEndDate) <= selectedDates.endDate){
+                            recordDateRange.push(record);
+                        }
+                    }
+                }
+            }
+            setRecordsWithinDateRange(recordDateRange);
+            setEvents(tempEvents);
+            setRecordsData(data.data.records);
+            setButtonLoading(false);
+            setCalendarEditable(true);
         }
-        let tempEvents = [];
-        for(const record of data.data.records) {
-            tempEvents.push({
-                id:record._id,
-                allDay:record.allDay,
-                title:record.title,
-                start:record.recordStartDate,
-                end:record.recordEndDate
-            })
-        }
-        setEvents(tempEvents);
-        setRecordsData(data.data.records);
-        setButtonLoading(false);
-        setCalendarEditable(true);
+    }
+
+    const handleDeleteDialogClose = () => {
+        setDeleteDialogOpen(false);
     }
 
     return (
@@ -324,6 +390,7 @@ const DiaryView = ({pid, session}) => {
                                                 setRecordPreview={setRecordPreview}
                                                 handleRecordNavigation={handleRecordNavigation}
                                                 buttonLoading={buttonLoading}
+                                                handleDeleteDialogOpen={handleDeleteDialogOpen}
                                             />
                                             :
                                             selectedDates.startDate ?
@@ -332,6 +399,8 @@ const DiaryView = ({pid, session}) => {
                                                         {recordsWithinDateRange.map((data) => {
                                                             return <Button onClick={handleRecordPreview(data)}
                                                                            size="small"
+                                                                           fullWidth
+                                                                           sx={{marginBottom:1}}
                                                                          variant="outlined" key={data._id}
                                                             >{`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
                                                             </Button>
@@ -344,6 +413,7 @@ const DiaryView = ({pid, session}) => {
                                                 {recordsData.map((data) => {
                                                     return <Button size="small" onClick={handleRecordPreview(data)}
                                                                    fullWidth
+                                                                   sx={{marginBottom:1}}
                                                                  variant="outlined" key={data._id}>
                                                                  {`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
                                                     </Button>
@@ -355,9 +425,9 @@ const DiaryView = ({pid, session}) => {
                                 </Grid>
                                 <Grid item xs={12} sx={{paddingTop:'1vh'}}>
                                     {!recordPreview &&
-                                        <Button fullWidth variant="contained" onClick={handleRecordNavigation} disabled={selectedDates.startDate === null}>
+                                        <LoadingButton loading={buttonLoading} fullWidth variant="contained" onClick={handleRecordNavigation} disabled={selectedDates.startDate === null}>
                                             Add new pain record
-                                        </Button>
+                                        </LoadingButton>
                                     }
                                 </Grid>
                                     {selectedDates.startDate &&
@@ -376,6 +446,15 @@ const DiaryView = ({pid, session}) => {
                             </form>
                         </Paper>
                     </Grid>
+                    <CustomDialog
+                        open={deleteDialogOpen}
+                        handleDialogClose={handleDeleteDialogClose}
+                        diaryId={recordPreview && recordPreview._id}
+                        titleText={dialogTitleText}
+                        contentText={dialogContentText}
+                        actionName="Delete"
+                        confirmAction={handleRecordDelete}
+                    />
                 </>
             }
         </Grid>
