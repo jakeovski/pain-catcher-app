@@ -24,7 +24,6 @@ import RecordPreview from "../helper/RecordPreview";
 import CustomDialog from "../helper/CustomDialog";
 import {LoadingButton} from "@mui/lab";
 
-//TODO:Change date format in calendar for months view to be 25/1 instead of 1/25
 const DiaryView = ({pid, session}) => {
 
     const router = useRouter();
@@ -64,24 +63,18 @@ const DiaryView = ({pid, session}) => {
     }
 
     useEffect(() => {
-        let abortController = new AbortController();
-        async function getRecords() {
-            const res = await fetch('/api/record', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId:session.user.id,
-                    diaryId:pid
-                })
-            });
-
-            return await res.json();
-        }
-
         setLoadingPage(true);
-        getRecords().then(data => {
+        fetch('/api/record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId:session.user.id,
+                diaryId:pid
+            })
+        }).then((res) => res.json())
+            .then((data) => {
                 if (!data.data) {
                     router.push('/home');
                 }else {
@@ -100,11 +93,51 @@ const DiaryView = ({pid, session}) => {
                     setRecordsData(data.data.records);
                     setLoadingPage(false);
                 }
-            return () => {
-                abortController.abort();
-            }
-        });
-    },[pid, router, session.user.id]);
+            });
+    },[]);
+
+    // useEffect(() => {
+    //     // let abortController = new AbortController();
+    //     // async function getRecords() {
+    //     //     const res = await fetch('/api/record', {
+    //     //         method: 'POST',
+    //     //         headers: {
+    //     //             'Content-Type': 'application/json'
+    //     //         },
+    //     //         body: JSON.stringify({
+    //     //             userId:session.user.id,
+    //     //             diaryId:pid
+    //     //         })
+    //     //     });
+    //     //
+    //     //     return await res.json();
+    //     // }
+    //
+    //     setLoadingPage(true);
+    //     getRecords().then(data => {
+    //             if (!data.data) {
+    //                 router.push('/home');
+    //             }else {
+    //                 let tempEvents = [];
+    //                 for(const record of data.data.records) {
+    //                     tempEvents.push({
+    //                         id:record._id,
+    //                         allDay:record.allDay,
+    //                         title:record.title,
+    //                         start:record.recordStartDate,
+    //                         end:record.recordEndDate
+    //                     })
+    //                 }
+    //                 setEvents(tempEvents);
+    //                 setDiaryData(data.data.diary[0]);
+    //                 setRecordsData(data.data.records);
+    //                 setLoadingPage(false);
+    //             }
+    //         return () => {
+    //             abortController.abort();
+    //         }
+    //     });
+    // },[pid, router, session.user.id]);
 
     const handleDateSelected = (info) => {
         const startDate = DateTime.fromISO(info.startStr);
@@ -157,11 +190,27 @@ const DiaryView = ({pid, session}) => {
         if (recordPreview) {
             await router.push(`/diary/${pid}/${recordPreview._id}`);
         }else {
-            console.log(selectedDates);
-            localStorage.setItem("RecordDates",JSON.stringify(selectedDates))
-            await router.push(`/diary/${pid}/new`);
+            console.log(recordsData.length);
+            if(recordsData.length > 0) {
+                const alreadyExists = recordsData.find((element) => {
+                    return DateTime.fromISO(element.recordStartDate).equals(selectedDates.startDate);
+                });
+                console.log(alreadyExists);
+                if (alreadyExists) {
+                    setErrorMessage({
+                        type: 'warning',
+                        message: 'There is already a record for that time'
+                    })
+                    setButtonLoading(false);
+                }else {
+                    localStorage.setItem("RecordDates",JSON.stringify(selectedDates))
+                    await router.push(`/diary/${pid}/new`);
+                }
+            }else {
+                localStorage.setItem("RecordDates",JSON.stringify(selectedDates))
+                await router.push(`/diary/${pid}/new`);
+            }
         }
-        setButtonLoading(false);
     }
 
     const handleRecordDelete = async(recordId) => {
@@ -200,6 +249,7 @@ const DiaryView = ({pid, session}) => {
             }
             setEvents(tempEvents);
             setRecordsData(data.data.records);
+            setRecordPreview(null);
             setButtonLoading(false);
         }
     }
@@ -283,11 +333,18 @@ const DiaryView = ({pid, session}) => {
         setDeleteDialogOpen(false);
     }
 
+    if(loadingPage) return <Grid container spacing={2} sx={{marginTop: '2vh'}}>
+        <CircularProgress sx={{marginTop: '40vh !important', marginLeft: '50vw !important'}}/>
+    </Grid>
+
+    if(!diaryData) return <Grid container spacing={2} sx={{marginTop: '2vh'}}>
+        <Grid item xs={12}>
+            <Alert severity="error">Diary does not exist!</Alert>
+        </Grid>
+    </Grid>
+
     return (
         <Grid container spacing={2} sx={{marginTop: '2vh'}}>
-            {loadingPage ? <CircularProgress sx={{marginTop: '40vh !important', marginLeft: '50vw !important'}}/>
-                :
-                <>
                     <Grid item xs={12} md={8} order={{xs:2,md:1}}>
                         <Paper elevation={3} sx={{
                             display: 'flex',
@@ -455,8 +512,6 @@ const DiaryView = ({pid, session}) => {
                         actionName="Delete"
                         confirmAction={handleRecordDelete}
                     />
-                </>
-            }
         </Grid>
     )
 }

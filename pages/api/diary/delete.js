@@ -1,5 +1,6 @@
 import Connection from "../../../config/dbConnection";
 import Diary from "../../../models/Diary";
+import Record from "../../../models/Record";
 
 const deleteDiary = async (req,res) => {
 
@@ -17,6 +18,10 @@ const deleteDiary = async (req,res) => {
         await Diary.deleteOne({
             _id:diaryId
         })
+
+        await Record.deleteMany({
+            diaryId:diaryId
+        });
 
         const data = await Diary.find({
             userId:userId

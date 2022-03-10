@@ -3,10 +3,10 @@ import {
     Alert,
     Box,
     Button,
-    CircularProgress,
-    Grid, IconButton,
-    LinearProgress,
-    Paper,
+    CircularProgress, FormControl, FormControlLabel,
+    Grid, IconButton, InputLabel,
+    LinearProgress, MenuItem,
+    Paper, Select, Skeleton, Switch,
     TextField, Tooltip,
     Typography,
     useTheme
@@ -19,6 +19,16 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import CustomDialog from "../helper/CustomDialog";
 import {useRouter} from "next/router";
 import {LoadingButton} from "@mui/lab";
+import randomColor from 'randomcolor';
+import {
+    CartesianGrid,
+    ComposedChart,
+    ResponsiveContainer,
+    XAxis,
+    YAxis,
+    Tooltip as ChartTooltip,
+    Legend, Line, Bar
+} from "recharts";
 
 const Dashboard = ({session}) => {
     const theme = useTheme();
@@ -38,13 +48,27 @@ const Dashboard = ({session}) => {
 
     const [modifyDiary,setModifyDiary] = useState(null);
 
-    //TODO:Not used right now, delete if will not be used at all
-    const [hideDiaryLoading,setHideDiaryLoading] = useState(true);
-
     const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
     const [dialogDiaryId,setDialogDiaryId] = useState(null);
     const [dialogTitleText,setDialogTitleText] = useState(null);
     const [dialogContentText,setDialogContentText] = useState(null);
+    const [selectedDiaryToAnalyze,setSelectedDiaryToAnalyze] = useState('');
+    const [toggleAnalysis,setToggleAnalysis] = useState(false);
+    const [analysisLoading,setAnalysisLoading] = useState(false);
+    //TODO:Remove if not needed
+    const [recordsForAnalysis,setRecordsForAnalysis] = useState([]);
+    const [chartData,setChartData] = useState([]);
+    const [showPainLevel,setShowPainLevel] = useState(true);
+    const [showActivity,setShowActivity] = useState(false);
+    const [showMood,setShowMood] = useState(false);
+    const [showMedication,setShowMedication] = useState(false);
+    const [showDiet,setShowDiet] = useState(false);
+    const [showSymptoms,setShowSymptoms] = useState(false);
+    const [showTriggers,setShowTriggers] = useState(false);
+    const [uniqueMedications,setUniqueMedications] = useState([]);
+    const [uniqueDiet,setUniqueDiet] = useState([]);
+    const [uniqueSymptoms,setUniqueSymptoms] = useState([]);
+    const [uniqueTriggers,setUniqueTriggers] = useState([]);
 
 
     const [newDiary, setNewDiary] = useState({
@@ -129,7 +153,6 @@ const Dashboard = ({session}) => {
         const data = await res.json();
         setDiaryData(data);
         setDeleteDialogOpen(false);
-        //setHideDiaryLoading(true);
     }
 
     const handleDeleteDialogOpen = (key,name) => {
@@ -182,9 +205,141 @@ const Dashboard = ({session}) => {
         })
     }, []);
 
+    const handleSelectedDiaryToAnalyzeChange = async (event) => {
+        setSelectedDiaryToAnalyze(event.target.value);
+        const canAnalyze = diaryData.data.find((element) => {
+            return element._id === event.target.value && element.numberOfRecords >= 3;
+        })
+        console.log(canAnalyze);
+        if (!canAnalyze) {
+            setToggleAnalysis(false);
+        }else {
+            await getDataForAnalysis(event.target.value);
+        }
+    }
+
+    const getDataForAnalysis = async(diaryId) => {
+        setToggleAnalysis(true);
+        setAnalysisLoading(true);
+        const res = await fetch('/api/record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId:session.user.id,
+                diaryId:diaryId
+            })
+        });
+
+        const data = await res.json();
+        console.log(data);
+        setRecordsForAnalysis(data.data.records);
+        setAnalysisLoading(false);
+        const chartDataTemp = [];
+        let uniqueMedications =[];
+        let uniqueDiet =[];
+        let uniqueSymptoms =[];
+        let uniqueTriggers = [];
+        for (const record of data.data.records) {
+            let dataEntry = {
+                name: DateTime.fromISO(record.recordStartDate).toFormat('dd/LL/yyyy HH:mm'),
+                painLevel:record.painLevel,
+                activity:record.activityLevel,
+                mood:record.mood,
+            }
+            for(const medication of record.medications){
+                if(!uniqueMedications.includes(medication)){
+                    uniqueMedications.push(medication);
+                }
+                dataEntry[medication] = record.painLevel
+            }
+            for(const product of record.diet){
+                if(!uniqueDiet.includes(product)){
+                    uniqueDiet.push(product);
+                }
+                dataEntry[product] = record.painLevel
+            }
+            for(const symptom of record.symptoms) {
+                if(!uniqueSymptoms.includes(symptom)){
+                    uniqueSymptoms.push(symptom);
+                }
+                dataEntry[symptom] = record.painLevel;
+            }
+            for(const trigger of record.triggers) {
+                if (!uniqueTriggers.includes(trigger)){
+                    uniqueTriggers.push(trigger);
+                }
+                dataEntry[trigger] = record.painLevel;
+            }
+            chartDataTemp.push(dataEntry);
+        }
+        setUniqueTriggers(uniqueTriggers);
+        setUniqueSymptoms(uniqueSymptoms);
+        setUniqueMedications(uniqueMedications);
+        setUniqueDiet(uniqueDiet);
+        console.log(chartDataTemp);
+        setChartData(chartDataTemp);
+    }
+
+    const handleShowActivity = (event) => {
+        setShowPainLevel(true);
+        setShowMedication(false);
+        setShowDiet(false);
+        setShowSymptoms(false);
+        setShowTriggers(false);
+        setShowActivity(event.target.checked);
+    }
+
+    const handleShowMood = (event) => {
+        setShowPainLevel(true);
+        setShowMedication(false);
+        setShowDiet(false);
+        setShowSymptoms(false);
+        setShowTriggers(false);
+        setShowMood(event.target.checked);
+    }
+
+    const handleShowMedication = (event) => {
+        setShowPainLevel(!event.target.checked);
+        setShowMood(false);
+        setShowActivity(false);
+        setShowDiet(false);
+        setShowSymptoms(false);
+        setShowTriggers(false);
+        setShowMedication(event.target.checked);
+    }
+    const handleShowDiet = (event) => {
+        setShowPainLevel(!event.target.checked);
+        setShowMood(false);
+        setShowActivity(false);
+        setShowSymptoms(false);
+        setShowTriggers(false);
+        setShowMedication(false);
+        setShowDiet(event.target.checked);
+    }
+    const handleShowSymptoms = (event) => {
+        setShowPainLevel(!event.target.checked);
+        setShowMood(false);
+        setShowActivity(false);
+        setShowTriggers(false);
+        setShowMedication(false);
+        setShowDiet(false);
+        setShowSymptoms(event.target.checked);
+    }
+    const handleShowTriggers = (event) => {
+        setShowPainLevel(!event.target.checked);
+        setShowMood(false);
+        setShowActivity(false);
+        setShowMedication(false);
+        setShowDiet(false);
+        setShowSymptoms(false);
+        setShowTriggers(event.target.checked);
+    }
+
     return (
-        <Grid container spacing={2} sx={{marginTop: '2vh'}}>
-            <Grid item xs={8}>
+        <Grid container spacing={2} sx={{marginTop: '2vh',marginBottom:'2vh'}}>
+            <Grid item xs={12} md={8} order={{xs:2,md:1}}>
                 <Paper elevation={3} sx={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -195,11 +350,11 @@ const Dashboard = ({session}) => {
                         <Grid item xs={12}>
                             <Typography fontWeight="bold" variant="h5">Your Diaries</Typography>
                         </Grid>
-                        {diaryData.data && hideDiaryLoading ?
+                        {diaryData.data ?
                             diaryData.data.length > 0 ?
                                 diaryData.data.map((data) => {
                                     return (
-                                        <Grid key={data._id} item lg={4} md={6}>
+                                        <Grid key={data._id} item xs={12} sm={6} lg={4} md={6}>
                                             <Paper sx={{
                                                 height: '290px', borderRadius: '15px',
                                                 backgroundColor: data.color,
@@ -280,7 +435,7 @@ const Dashboard = ({session}) => {
                     confirmAction={handleDiaryDelete}
                 />
             </Grid>
-            <Grid item xs={4}>
+            <Grid item xs={12} md={4} order={{xs:1,md:2}}>
                 <Paper elevation={3} sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -383,6 +538,176 @@ const Dashboard = ({session}) => {
                             <Alert severity={diaryData.type} sx={{marginTop: '1vh'}}>{diaryData.message}</Alert>
                         }
                     </form>
+                </Paper>
+            </Grid>
+            <Grid item xs={12} order={{xs:3}}>
+                <Paper elevation={3} sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    padding: (theme) => theme.spacing(2),
+                    borderRadius: '10px'
+                }}>
+                    <Grid container spacing={1}>
+                        <Grid item xs={12}>
+                            <Typography variant="h5" fontWeight="bold">Diary Analysis</Typography>
+                        </Grid>
+                        <Grid item xs={6} md={4} lg={3}>
+                            <FormControl fullWidth>
+                                <InputLabel id="diaryToAnalyze">Diary</InputLabel>
+                                <Select
+                                    labelId="diaryToAnalyze"
+                                    id="selectedDiaryToAnalyze"
+                                    value={selectedDiaryToAnalyze}
+                                    label="Diary"
+                                    onChange={handleSelectedDiaryToAnalyzeChange}
+                                >
+                                    {diaryData.data &&
+                                        diaryData.data.map((data) => {
+                                            return (
+                                                <MenuItem key={data._id} value={data._id}>{data.name}</MenuItem>
+                                            )
+                                        })
+                                    }
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={6} md={8} lg={9} alignSelf="center">
+                            {selectedDiaryToAnalyze ?
+                                !toggleAnalysis &&
+                                <Typography>Diary must have at least 3 records for the analysis</Typography>
+                                :
+                                <Typography>Select a diary to analyze</Typography>
+                            }
+                        </Grid>
+                        <Grid item container xs={12} spacing={1}>
+                            {toggleAnalysis ?
+                                analysisLoading ?
+                                    <>
+                                    <Grid item xs={12}>
+                                        <LinearProgress color="primary"/>
+                                    </Grid>
+                                    <Grid item container xs={6} spacing={1}>
+                                        <Grid item xs={12}>
+                                            <Skeleton animation="wave" variant="rectangular" height={400}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                        <Grid item xs={4}>
+                                            <Skeleton animation="wave" height={30}/>
+                                        </Grid>
+                                    </Grid>
+                                        <Grid item container xs={6} alignContent="flex-start">
+                                            <Grid item xs={12}>
+                                                <Skeleton animation="wave" height={70}/>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <Skeleton animation="wave" height={70}/>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <Skeleton animation="wave" height={70}/>
+                                            </Grid>
+                                            <Grid item xs={12}>
+                                                <Skeleton animation="wave" height={70}/>
+                                            </Grid>
+                                        </Grid>
+                                    </>
+                                :
+                                    <Grid item container xs={12} md={6}>
+                                        <Grid item xs={12}>
+                                            {/*<Typography>Analysis here:</Typography>*/}
+                                            <ResponsiveContainer width="100%" height={400}>
+                                                <ComposedChart
+                                                    data={chartData}
+                                                    margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
+                                                >
+                                                    <CartesianGrid stroke="#f5f5f5" />
+                                                    <XAxis dataKey="name" scale="band"/>
+                                                    <YAxis label={{value:showMedication ? 'Pain Level' : 'Scale',angle:-90,position:'insideCenter',offset:20}}/>
+                                                    <ChartTooltip/>
+                                                    <Legend/>
+                                                    {showActivity &&
+                                                        <Bar dataKey="activity" barSize={20} fill={theme.palette.primary.dark}/>
+                                                    }
+                                                    {showMood &&
+                                                        <Bar dataKey="mood" barSize={20} fill="#BFA616"/>
+                                                    }
+                                                    {showPainLevel &&
+                                                        <Line type="monotone" dataKey="painLevel" stroke={theme.palette.primary.main}/>
+                                                    }
+                                                    {showMedication &&
+                                                        uniqueMedications.map((data,index) => {
+                                                            return (
+                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
+                                                            )
+                                                        })
+                                                    }
+                                                    {showDiet &&
+                                                        uniqueDiet.map((data,index) => {
+                                                            return (
+                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
+                                                            )
+                                                        })
+                                                    }
+                                                    {showSymptoms &&
+                                                        uniqueSymptoms.map((data,index) => {
+                                                            return (
+                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
+                                                            )
+                                                        })
+                                                    }
+                                                    {showTriggers &&
+                                                        uniqueTriggers.map((data,index) => {
+                                                            return (
+                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
+                                                            )
+                                                        })
+                                                    }
+                                                </ComposedChart>
+                                            </ResponsiveContainer>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showActivity} onChange={handleShowActivity}/>} label="Activity"/>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showMood} onChange={handleShowMood}/>} label="Mood"/>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showMedication} onChange={handleShowMedication}/>} label="Medication"/>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showDiet} onChange={handleShowDiet}/>} label="Diet"/>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showSymptoms} onChange={handleShowSymptoms}/>} label="Symptoms"/>
+                                        </Grid>
+                                        <Grid item xs={4} textAlign="center">
+                                            <FormControlLabel control={<Switch checked={showTriggers} onChange={handleShowTriggers}/>} label="Triggers"/>
+                                        </Grid>
+                                    </Grid>
+                                :
+                                <></>
+                            }
+                        </Grid>
+                    </Grid>
                 </Paper>
             </Grid>
         </Grid>
