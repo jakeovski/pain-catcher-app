@@ -10,22 +10,22 @@ import mongoose from "mongoose";
  * @param res
  * @returns {Promise<*>}
  */
-const reset = async(req,res) => {
-    const {id,password} = req.body;
+const reset = async (req, res) => {
+    const {id, password} = req.body;
     try {
         //Find the user in the db
         await Connection();
         const user = await User.findOne({
-            _id:id
+            _id: id
         });
         //Check whether the password from the db matches the input
         const checkPassword = await compare(password, user.password);
 
         //If the password match, return an error as you cannot reset the password to the previous password
-        if(checkPassword){
+        if (checkPassword) {
             return res.status(402).json({
-                type:'warning',
-                message:"Password cannot be the same as the old one"
+                type: 'warning',
+                message: "Password cannot be the same as the old one"
             })
         }
 
@@ -43,16 +43,16 @@ const reset = async(req,res) => {
 
         //Return the response
         return res.status(200).json({
-            type:'success',
-            message:'Password was reset'
+            type: 'success',
+            message: 'Password was reset'
         })
-    }catch (error) {
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
-            type:'error',
-            message:'Error while resetting password'
+            type: 'error',
+            message: 'Error while resetting password'
         })
-    }finally {
+    } finally {
         await mongoose.connection.close();
     }
 }

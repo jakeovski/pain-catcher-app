@@ -29,14 +29,14 @@ const Login = ({darkState}) => {
     const [showLoading, setShowLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState({
         code: undefined,
-        type:'',
-        message:'',
+        type: '',
+        message: '',
     })
 
     const {data: session} = useSession();
 
     useEffect(() => {
-        if(session){
+        if (session) {
             router.push('/');
         }
     }, [router, session]);
@@ -45,11 +45,11 @@ const Login = ({darkState}) => {
     /**
      * Resets the state of the error Message object
      */
-    const resetError = () =>{
+    const resetError = () => {
         setErrorMessage({
-            code:undefined,
-            type:'',
-            message:''
+            code: undefined,
+            type: '',
+            message: ''
         });
     }
 
@@ -88,15 +88,15 @@ const Login = ({darkState}) => {
                 setErrorMessage(data);
                 switchRegister(false);
             }
-        }else if (isForgot) {
+        } else if (isForgot) {
             setShowLoading(true);
             const res = await fetch('/api/email', {
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    email:formData.email
+                    email: formData.email
                 })
             });
 
@@ -104,24 +104,24 @@ const Login = ({darkState}) => {
             const data = await res.json();
             setShowLoading(false);
             setErrorMessage(data);
-        }else {
+        } else {
             //If it is nothing of the above, means it is a sign in operation
             setShowLoading(true);
             //Call the Sign In API
-            const status = await signIn('credentials',{
-                redirect:false,
-                email:formData.email,
-                password:formData.password,
+            const status = await signIn('credentials', {
+                redirect: false,
+                email: formData.email,
+                password: formData.password,
             })
             //If error received, show the appropriate message
             if (status.error) {
                 setShowLoading(false);
                 setErrorMessage({
-                    code:401,
-                    type:'error',
+                    code: 401,
+                    type: 'error',
                     message: status.error
                 });
-            }else {
+            } else {
                 router.push('/home');
             }
         }
@@ -134,26 +134,26 @@ const Login = ({darkState}) => {
     const inputValidation = () => {
         let correct = true;
 
-        if(isRegister) {
-            if(formData.password !== formData.confirmPassword){
-                setErrorMessage({code:401,type:'warning',message:'The passwords do not match'});
+        if (isRegister) {
+            if (formData.password !== formData.confirmPassword) {
+                setErrorMessage({code: 401, type: 'warning', message: 'The passwords do not match'});
                 correct = false;
             }
-            if(!formData.firstName){
-                setErrorMessage({code:401,type:'warning',message:'Firstname is empty'});
+            if (!formData.firstName) {
+                setErrorMessage({code: 401, type: 'warning', message: 'Firstname is empty'});
                 correct = false;
             }
-            if(!formData.lastName) {
-                setErrorMessage({code:401,type:'warning',message:'Lastname is empty'});
+            if (!formData.lastName) {
+                setErrorMessage({code: 401, type: 'warning', message: 'Lastname is empty'});
                 correct = false;
             }
         }
         if (!formData.email) {
-            setErrorMessage({code:401,type:'warning',message:'Email is empty'});
+            setErrorMessage({code: 401, type: 'warning', message: 'Email is empty'});
             correct = false;
         }
         if (formData.password && formData.password.length < 8) {
-            setErrorMessage({code: 401,type:'warning',message:'Password must be at least 8 characters'});
+            setErrorMessage({code: 401, type: 'warning', message: 'Password must be at least 8 characters'});
             correct = false;
         }
 
@@ -166,7 +166,7 @@ const Login = ({darkState}) => {
      */
     const handleChange = (e) => {
         setFormData({
-            ...formData,[e.target.name]:e.target.value
+            ...formData, [e.target.name]: e.target.value
         });
     }
 
@@ -182,7 +182,7 @@ const Login = ({darkState}) => {
      */
     const switchForgot = () => {
         setIsForgot((prevForgot) => !prevForgot);
-        if(errorMessage){
+        if (errorMessage) {
             resetError();
         }
     }
@@ -192,7 +192,7 @@ const Login = ({darkState}) => {
      */
     const switchRegister = (reset) => {
         setIsRegister((prevRegister) => !prevRegister);
-        if(errorMessage && reset){
+        if (errorMessage && reset) {
             resetError();
         }
     }
@@ -200,130 +200,130 @@ const Login = ({darkState}) => {
     return (
         <Container component="main" maxWidth="xs"
                    sx={{
-                       height:'90vh',
-                       display:'flex',
-                       flexDirection:'column',
-                       justifyContent:'center',
-                       textAlign:'center'
+                       height: '90vh',
+                       display: 'flex',
+                       flexDirection: 'column',
+                       justifyContent: 'center',
+                       textAlign: 'center'
                    }}
         >
-                <Paper elevation={3}
-                       sx={{
-                           display:'flex',
-                           flexDirection:'column',
-                           alignItems:'center',
-                           padding:(theme) => theme.spacing(2)
-                       }}
+            <Paper elevation={3}
+                   sx={{
+                       display: 'flex',
+                       flexDirection: 'column',
+                       alignItems: 'center',
+                       padding: (theme) => theme.spacing(2)
+                   }}
+            >
+                <form onSubmit={handleSubmit}
                 >
-                    <form onSubmit={handleSubmit}
-                    >
-                        {darkState ?
-                            <Image
+                    {darkState ?
+                        <Image
                             src="/darkLogo.svg"
                             height="100vh" width="360vw"
                             alt="PainCatcher Dark Logo"
+                        />
+                        :
+                        <Image src="/lightLogo.svg"
+                               height="120vh" width="200vw"
+                               alt="PainCatcher Light Logo"
+                        />
+                    }
+                    <Typography variant="h5" padding={1}>
+                        {isRegister ? "Register" : isForgot ? "Reset Password" : "Sign In"}
+                    </Typography>
+                    {errorMessage.code &&
+                        <Alert
+                            sx={{marginBottom: '2vh'}}
+                            severity={errorMessage.type}
+                        >
+                            {errorMessage.message}
+                        </Alert>
+                    }
+                    <Grid container spacing={2}>
+                        {isRegister &&
+                            <>
+                                <Input
+                                    name="firstName"
+                                    label="First Name"
+                                    handleChange={handleChange}
+                                    autoFocus
+                                    value={formData.firstName}
+                                    half
+                                />
+                                <Input
+                                    name="lastName"
+                                    label="Last Name"
+                                    handleChange={handleChange}
+                                    value={formData.lastName}
+                                    half
+                                />
+                            </>
+                        }
+                        <Input
+                            name="email"
+                            label="Email"
+                            value={formData.email}
+                            handleChange={handleChange}
+                            type="email"
+                        />
+                        {!isForgot &&
+                            <Input
+                                name="password"
+                                label="Password"
+                                value={formData.password}
+                                handleChange={handleChange}
+                                type={showPassword ? "text" : "password"}
+                                handleShowPassword={handleShowPassword}
+                            />
+                        }
+                        {isRegister ?
+                            <Input
+                                name="confirmPassword"
+                                label="Confirm Password"
+                                handleChange={handleChange}
+                                type="password"
+                                value={formData.confirmPassword}
+                                handleShowPassword={handleShowPassword}
                             />
                             :
-                            <Image src="/lightLogo.svg"
-                            height="120vh" width="200vw"
-                                   alt="PainCatcher Light Logo"
-                            />
-                        }
-                        <Typography variant="h5" padding={1}>
-                            {isRegister ? "Register" : isForgot ? "Reset Password" : "Sign In"}
-                        </Typography>
-                        {errorMessage.code &&
-                            <Alert
-                                sx={{marginBottom:'2vh'}}
-                                severity={errorMessage.type}
-                            >
-                                {errorMessage.message}
-                            </Alert>
-                        }
-                        <Grid container spacing={2}>
-                            {isRegister &&
-                                <>
-                                    <Input
-                                        name="firstName"
-                                        label="First Name"
-                                        handleChange={handleChange}
-                                        autoFocus
-                                        value={formData.firstName}
-                                        half
-                                    />
-                                    <Input
-                                        name="lastName"
-                                        label="Last Name"
-                                        handleChange={handleChange}
-                                        value={formData.lastName}
-                                        half
-                                    />
-                                </>
-                            }
-                            <Input
-                                name="email"
-                                label="Email"
-                                value={formData.email}
-                                handleChange={handleChange}
-                                type="email"
-                            />
-                            {!isForgot &&
-                                <Input
-                                    name="password"
-                                    label="Password"
-                                    value={formData.password}
-                                    handleChange={handleChange}
-                                    type={showPassword ? "text" : "password"}
-                                    handleShowPassword={handleShowPassword}
-                                />
-                            }
-                            {isRegister ?
-                                <Input
-                                    name="confirmPassword"
-                                    label="Confirm Password"
-                                    handleChange={handleChange}
-                                    type="password"
-                                    value={formData.confirmPassword}
-                                    handleShowPassword={handleShowPassword}
-                                />
-                                :
-                                <Grid item sx={{
-                                    paddingTop:'0px !important',
-                                }}>
-                                    <Button onClick={switchForgot} sx={{paddingLeft:0}}>
-                                        {isForgot
-                                            ? "Remembered your password? Sign In!"
-                                            : "Forgot your password?"
-                                        }
-                                    </Button>
-                                </Grid>
-                            }
-                        </Grid>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            sx={{
-                                margin:(theme) => theme.spacing(2,0,2)
-                            }}
-                        >
-                            {isRegister ? "Register" : isForgot ? "Send Link" : "Sign In"}
-                        </Button>
-                        {showLoading && <LinearProgress/>}
-                        {!isForgot &&
-                            <Grid container justifyContent="flex-end">
-                                <Grid item>
-                                    <Button onClick={() => switchRegister(true)} sx={{paddingRight:0}}>
-                                        {isRegister
-                                            ? "Already have an account? Sign In!"
-                                            : "Don't have an account? Register!"}
-                                    </Button>
-                                </Grid>
+                            <Grid item sx={{
+                                paddingTop: '0px !important',
+                            }}>
+                                <Button onClick={switchForgot} sx={{paddingLeft: 0}}>
+                                    {isForgot
+                                        ? "Remembered your password? Sign In!"
+                                        : "Forgot your password?"
+                                    }
+                                </Button>
                             </Grid>
                         }
-                    </form>
-                </Paper>
+                    </Grid>
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        color="primary"
+                        sx={{
+                            margin: (theme) => theme.spacing(2, 0, 2)
+                        }}
+                    >
+                        {isRegister ? "Register" : isForgot ? "Send Link" : "Sign In"}
+                    </Button>
+                    {showLoading && <LinearProgress/>}
+                    {!isForgot &&
+                        <Grid container justifyContent="flex-end">
+                            <Grid item>
+                                <Button onClick={() => switchRegister(true)} sx={{paddingRight: 0}}>
+                                    {isRegister
+                                        ? "Already have an account? Sign In!"
+                                        : "Don't have an account? Register!"}
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    }
+                </form>
+            </Paper>
         </Container>
     )
 }

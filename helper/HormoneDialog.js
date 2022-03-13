@@ -1,12 +1,21 @@
 import React, {useState} from 'react';
 import {
     Button,
-    Dialog, DialogActions,
+    Dialog,
+    DialogActions,
     DialogContent,
-    DialogTitle, Divider,
-    FormControl, FormHelperText,
+    DialogTitle,
+    Divider,
+    FormControl,
+    FormHelperText,
     Grid,
-    IconButton, InputAdornment, InputLabel, MenuItem, Select, TextField, Tooltip,
+    IconButton,
+    InputAdornment,
+    InputLabel,
+    MenuItem,
+    Select,
+    TextField,
+    Tooltip,
     Typography,
     useMediaQuery,
     useTheme
@@ -17,10 +26,18 @@ import {Alert} from "@mui/lab";
 import DeleteIcon from '@mui/icons-material/Delete';
 
 
-const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordData,hormoneDialogOpen, setHormoneDialogOpen, hormoneDetailsDefault}) => {
+const HormoneDialog = ({
+                           hormoneDetails,
+                           setHormoneDetails,
+                           recordData,
+                           setRecordData,
+                           hormoneDialogOpen,
+                           setHormoneDialogOpen,
+                           hormoneDetailsDefault
+                       }) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
-    const [showAlert,setShowAlert] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
     const psaText = 'PSA (Prostate-specific antigen) is a protein produced mainly by cells' +
         ' in the prostate gland and is a useful indicator of prostate cancer. ' +
         'PSA is found in all males; however, levels may be elevated in men with an infection' +
@@ -102,7 +119,6 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
         ' can be confirmed by a decrease in blood oestradiol levels.';
 
 
-
     const handleDialogClose = () => {
         setHormoneDialogOpen(false);
         setShowAlert(false);
@@ -110,13 +126,13 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
 
     const handleGenderChange = (event) => {
         setHormoneDetails({
-            ...hormoneDetails,gender:event.target.value
+            ...hormoneDetails, gender: event.target.value
         })
     }
 
     const removeHormoneDetails = () => {
         setRecordData({
-            ...recordData,hormoneDetails:hormoneDetailsDefault
+            ...recordData, hormoneDetails: hormoneDetailsDefault
         });
         setHormoneDetails(hormoneDetailsDefault);
         setHormoneDialogOpen(false);
@@ -124,60 +140,59 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
 
     const testosteroneValues = [
         {
-            value:'free',
+            value: 'free',
             label: 'pg/mL'
         },
         {
-            value:'total',
+            value: 'total',
             label: 'nmol/L'
         }
     ]
 
     const handleMeasure = (event) => {
-       setHormoneDetails({
-           ...hormoneDetails,testosterone: {
-               value: hormoneDetails.testosterone.value,
-               measure: event.target.value
-           }
-       })
+        setHormoneDetails({
+            ...hormoneDetails, testosterone: {
+                value: hormoneDetails.testosterone.value,
+                measure: event.target.value
+            }
+        })
     }
 
     const handleDialogSubmit = () => {
         let check = false;
-        if (hormoneDetails.PSA){
+        if (hormoneDetails.PSA) {
             check = true;
-        }else if (hormoneDetails.oestradiol) {
-            check=true;
-        }else if (hormoneDetails.progesterone) {
+        } else if (hormoneDetails.oestradiol) {
             check = true;
-        }else if (hormoneDetails.DHEA) {
-            check=true;
-        }else if (hormoneDetails.testosterone.value) {
-            check=true;
-        }else if (hormoneDetails.FBC.MCHC) {
+        } else if (hormoneDetails.progesterone) {
             check = true;
-        }else if (hormoneDetails.FBC.MCH) {
+        } else if (hormoneDetails.DHEA) {
             check = true;
-        }else if (hormoneDetails.FBC.MCV) {
+        } else if (hormoneDetails.testosterone.value) {
             check = true;
-        }else if (hormoneDetails.FBC.RDW){
+        } else if (hormoneDetails.FBC.MCHC) {
             check = true;
-        }else if (hormoneDetails.vitaminD) {
+        } else if (hormoneDetails.FBC.MCH) {
             check = true;
-        }else if (hormoneDetails.SHBG) {
+        } else if (hormoneDetails.FBC.MCV) {
             check = true;
-        }else if (hormoneDetails.FSH) {
+        } else if (hormoneDetails.FBC.RDW) {
+            check = true;
+        } else if (hormoneDetails.vitaminD) {
+            check = true;
+        } else if (hormoneDetails.SHBG) {
+            check = true;
+        } else if (hormoneDetails.FSH) {
             check = true;
         }
         if (check) {
             setRecordData({
-                ...recordData,hormoneDetails:{...hormoneDetails,populated: true}
+                ...recordData, hormoneDetails: {...hormoneDetails, populated: true}
             });
             setHormoneDialogOpen(false);
-        }
-        else {
+        } else {
             setHormoneDetails({
-                ...hormoneDetails,populated:false
+                ...hormoneDetails, populated: false
             })
             setShowAlert(true);
         }
@@ -224,358 +239,405 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
                             </Select>
                         </FormControl>
                     </Grid>
-                        {
-                            hormoneDetails.gender ?
-                                <>
-                                    <Grid item xs={12}>
-                                        <Typography variant="h6">{hormoneDetails.gender} Hormone Profile <small style={{opacity:0.55,fontSize:13}}>(Data is taken from mariongluckclinic.com)</small></Typography>
-                                        <Divider/>
+                    {
+                        hormoneDetails.gender ?
+                            <>
+                                <Grid item xs={12}>
+                                    <Typography variant="h6">{hormoneDetails.gender} Hormone Profile <small
+                                        style={{opacity: 0.55, fontSize: 13}}>(Data is taken from
+                                        mariongluckclinic.com)</small></Typography>
+                                    <Divider/>
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item xs={3} md={4} paddingTop={1}>
+                                        <Typography>{hormoneDetails.gender === 'Male' ? 'PSA (Total):' : 'FSH'}</Typography>
                                     </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={3} md={4} paddingTop={1}>
-                                            <Typography>{hormoneDetails.gender === 'Male' ? 'PSA (Total):' : 'FSH'}</Typography>
-                                        </Grid>
-                                        <Grid item xs={9} md={8}>
-                                            <TextField
-                                                size="small"
-                                                fullWidth
-                                                value={hormoneDetails.gender === 'Male' ? hormoneDetails.PSA : hormoneDetails.FSH}
-                                                type="number"
-                                                InputProps={{
-                                                    endAdornment:<InputAdornment position="end">
-                                                        {hormoneDetails.gender === 'Male' ? 'µg/L' : 'IU/L'}
-                                                        <Tooltip title={hormoneDetails.gender === 'Male' ? psaText : fshText} placement="top">
-                                                            <IconButton>
-                                                                <HelpIcon color="primary"/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </InputAdornment>
-                                                }}
-                                                onChange={(event) => {
-                                                    let value = event.target.value;
-                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                        value = '0';
-                                                    }
-                                                    if(hormoneDetails.gender === 'Male'){
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,PSA: value
-                                                        })
-                                                    }else {
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,FSH: value,
-                                                        })
-                                                    }
-                                                }}
-                                            />
-                                            <FormHelperText>
-                                                {
-                                                    hormoneDetails.gender === 'Male' ? 'Normal: 0 – 1.40 µg/L'
-                                                        : <>Follicular:  3.5 – 12.5 IU/L<br/>
-                                                        Mid-cycle:  4.7 – 21.5 IU/L<br/>
+                                    <Grid item xs={9} md={8}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            value={hormoneDetails.gender === 'Male' ? hormoneDetails.PSA : hormoneDetails.FSH}
+                                            type="number"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    {hormoneDetails.gender === 'Male' ? 'µg/L' : 'IU/L'}
+                                                    <Tooltip
+                                                        title={hormoneDetails.gender === 'Male' ? psaText : fshText}
+                                                        placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                if (hormoneDetails.gender === 'Male') {
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, PSA: value
+                                                    })
+                                                } else {
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, FSH: value,
+                                                    })
+                                                }
+                                            }}
+                                        />
+                                        <FormHelperText>
+                                            {
+                                                hormoneDetails.gender === 'Male' ? 'Normal: 0 – 1.40 µg/L'
+                                                    : <>Follicular: 3.5 – 12.5 IU/L<br/>
+                                                        Mid-cycle: 4.7 – 21.5 IU/L<br/>
                                                         Luteal: 1.7 – 7.7 IU/L<br/>
                                                         Post-menopausal: 25.8 – 134.8 IU/L</>
-                                                }
-                                            </FormHelperText>
-                                        </Grid>
+                                            }
+                                        </FormHelperText>
                                     </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={3} paddingTop={1}>
-                                            <Typography>Oestradiol:</Typography>
-                                        </Grid>
-                                        <Grid item xs={9}>
-                                            <TextField
-                                                size="small"
-                                                fullWidth
-                                                value={hormoneDetails.oestradiol}
-                                                type="number"
-                                                InputProps={{
-                                                    endAdornment:<InputAdornment position="end">
-                                                        pmol/L
-                                                        <Tooltip title={hormoneDetails.gender === 'Male' ? oestradiolText : oestradiolTextFemale} placement="top">
-                                                            <IconButton>
-                                                                <HelpIcon color="primary"/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </InputAdornment>
-                                                }}
-                                                onChange={(event) => {
-                                                    let value = event.target.value;
-                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                        value = '0';
-                                                    }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,oestradiol: value
-                                                        })
-                                                }}
-                                            />
-                                            <FormHelperText>
-                                                {hormoneDetails.gender === 'Male' ? 'Normal: 0 – 192 pmol/L'
-                                                    :
-                                                    <>
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item xs={3} paddingTop={1}>
+                                        <Typography>Oestradiol:</Typography>
+                                    </Grid>
+                                    <Grid item xs={9}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            value={hormoneDetails.oestradiol}
+                                            type="number"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    pmol/L
+                                                    <Tooltip
+                                                        title={hormoneDetails.gender === 'Male' ? oestradiolText : oestradiolTextFemale}
+                                                        placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setHormoneDetails({
+                                                    ...hormoneDetails, oestradiol: value
+                                                })
+                                            }}
+                                        />
+                                        <FormHelperText>
+                                            {hormoneDetails.gender === 'Male' ? 'Normal: 0 – 192 pmol/L'
+                                                :
+                                                <>
                                                     Follicular: 98 – 571 pmol/L<br/>
                                                     Mid-cycle: 177 – 1153 pmol/L<br/>
                                                     Luteal: 122 – 1094 pmol/L<br/>
                                                     {`Post-menopausal: <183 pmol/L`}</>
-                                                }
-                                            </FormHelperText>
-                                        </Grid>
+                                            }
+                                        </FormHelperText>
                                     </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={3} md={4} paddingTop={1}>
-                                            <Typography>Progesterone:</Typography>
-                                        </Grid>
-                                        <Grid item xs={9} md={8}>
-                                            <TextField
-                                                size="small"
-                                                fullWidth
-                                                value={hormoneDetails.progesterone}
-                                                type="number"
-                                                InputProps={{
-                                                    endAdornment:<InputAdornment position="end">
-                                                        nmol/L
-                                                        <Tooltip title={hormoneDetails.gender === 'Male' ? progesteroneText : progesteroneTextFemale} placement="top">
-                                                            <IconButton>
-                                                                <HelpIcon color="primary"/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </InputAdornment>
-                                                }}
-                                                onChange={(event) => {
-                                                    let value = event.target.value;
-                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                        value = '0';
-                                                    }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,progesterone: value
-                                                        })
-                                                }}
-                                            />
-                                            <FormHelperText>
-                                                {hormoneDetails.gender === 'Male' ? 'Normal: 0.2 – 0.5 nmol/L' :
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item xs={3} md={4} paddingTop={1}>
+                                        <Typography>Progesterone:</Typography>
+                                    </Grid>
+                                    <Grid item xs={9} md={8}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            value={hormoneDetails.progesterone}
+                                            type="number"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    nmol/L
+                                                    <Tooltip
+                                                        title={hormoneDetails.gender === 'Male' ? progesteroneText : progesteroneTextFemale}
+                                                        placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setHormoneDetails({
+                                                    ...hormoneDetails, progesterone: value
+                                                })
+                                            }}
+                                        />
+                                        <FormHelperText>
+                                            {hormoneDetails.gender === 'Male' ? 'Normal: 0.2 – 0.5 nmol/L' :
                                                 <>Follicular: 0.2 – 2.8 mol/L<br/>
                                                     Periovulatory: 0.4 – 38.1 nmol/L<br/>
                                                     Luteal: 5.8 – 75.9 nmol/L<br/>
                                                     Post-menopausal: 0.2 – 0.4 nmol/L<br/>
                                                     Day 21 progesterone testing:<br/>
-                                                {'> 30 nmol/L usually indicates ovulation'}<br/>
-                                                {'< 5 nmol/L indicates no ovulation has occurred'}</>}
-                                            </FormHelperText>
-                                        </Grid>
+                                                    {'> 30 nmol/L usually indicates ovulation'}<br/>
+                                                    {'< 5 nmol/L indicates no ovulation has occurred'}</>}
+                                        </FormHelperText>
                                     </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={3} md={3} paddingTop={1}>
-                                            <Typography>DHEA-S:</Typography>
-                                        </Grid>
-                                        <Grid item xs={9} md={9}>
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item xs={3} md={3} paddingTop={1}>
+                                        <Typography>DHEA-S:</Typography>
+                                    </Grid>
+                                    <Grid item xs={9} md={9}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            value={hormoneDetails.DHEA}
+                                            type="number"
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    µmol/L
+                                                    <Tooltip title={dheaText} placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setHormoneDetails({
+                                                    ...hormoneDetails, DHEA: value
+                                                })
+                                            }}
+                                        />
+                                        <FormHelperText>
+                                            {hormoneDetails.gender === 'Male' ? 'Normal: 0.4 – 13.4 µmol/L' : 'Normal:  0.26 – 11.0 µmol/L'}
+                                        </FormHelperText>
+                                    </Grid>
+                                </Grid>
+                                <Grid item container xs={12} md={12}>
+                                    <Grid item xs={3} md={2} paddingTop={1}>
+                                        <Typography>Testosterone:</Typography>
+                                    </Grid>
+                                    <Grid item xs={5} md={4}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            type="number"
+                                            value={hormoneDetails.testosterone.value}
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    <Tooltip
+                                                        title={hormoneDetails.gender === 'Male' ? testosteroneText : testosteroneTextFemale}
+                                                        placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setHormoneDetails({
+                                                    ...hormoneDetails, testosterone: {
+                                                        value: value,
+                                                        measure: hormoneDetails.testosterone.measure
+                                                    }
+                                                })
+                                            }}
+                                        />
+                                        <FormHelperText>
+                                            {hormoneDetails.gender === 'Male' ?
+                                                <>
+                                                    Total Testosterone Normal: 7.6 – 31.4 nmol/L<br/>Free Testosterone
+                                                    Normal: 0.4 – 7.1 pg/mL
+                                                </> :
+                                                <>
+                                                    Total Testosterone Normal: 0 – 1.8 nmol/L<br/>
+                                                    Free Testosterone Normal: 0.4 – 7.1 pg/mL
+                                                </>}
+                                        </FormHelperText>
+                                    </Grid>
+                                    <Grid item xs="auto" md={2} sx={{ml: 1}}>
+                                        <TextField
+                                            select
+                                            size="small"
+                                            label="Measure"
+                                            value={hormoneDetails.testosterone.measure}
+                                            onChange={handleMeasure}
+                                            helperText="Select Measure"
+                                        >
+                                            {testosteroneValues.map((option) => (
+                                                <MenuItem key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </MenuItem>
+                                            ))
+                                            }
+                                        </TextField>
+                                    </Grid>
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item container xs={3} md={4} paddingTop={1}>
+                                        <Typography>FBC
+                                            <Tooltip title={fbcText} placement="top">
+                                                <IconButton sx={{padding: 0, marginBottom: 0.5}}>
+                                                    <HelpIcon color="primary"/>
+                                                </IconButton>
+                                            </Tooltip>
+                                            :</Typography>
+                                    </Grid>
+                                    <Grid item container xs={9} md={8} spacing={1}>
+                                        <Grid item xs={3} md={6}>
                                             <TextField
                                                 size="small"
                                                 fullWidth
-                                                value={hormoneDetails.DHEA}
+                                                value={hormoneDetails.FBC.MCV}
                                                 type="number"
-                                                InputProps={{
-                                                    endAdornment:<InputAdornment position="end">
-                                                        µmol/L
-                                                        <Tooltip title={dheaText} placement="top">
-                                                            <IconButton>
-                                                                <HelpIcon color="primary"/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </InputAdornment>
-                                                }}
+                                                label="MCV"
                                                 onChange={(event) => {
                                                     let value = event.target.value;
                                                     if (parseInt(event.target.value) < 0 || event.target.value === '00') {
                                                         value = '0';
                                                     }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,DHEA: value
-                                                        })
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, FBC: {
+                                                            MCV: value,
+                                                            MCH: hormoneDetails.FBC.MCH,
+                                                            MCHC: hormoneDetails.FBC.MCHC,
+                                                            RDW: hormoneDetails.FBC.RDW
+                                                        }
+                                                    })
                                                 }}
                                             />
-                                            <FormHelperText>
-                                                {hormoneDetails.gender === 'Male' ? 'Normal: 0.4 – 13.4 µmol/L' : 'Normal:  0.26 – 11.0 µmol/L'}
-                                            </FormHelperText>
                                         </Grid>
-                                    </Grid>
-                                    <Grid item container xs={12} md={12}>
-                                        <Grid item xs={3} md={2} paddingTop={1}>
-                                            <Typography>Testosterone:</Typography>
-                                        </Grid>
-                                        <Grid item xs={5} md={4}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    type="number"
-                                                    value={hormoneDetails.testosterone.value}
-                                                    InputProps={{
-                                                        endAdornment:<InputAdornment position="end">
-                                                            <Tooltip title={hormoneDetails.gender === 'Male' ? testosteroneText : testosteroneTextFemale} placement="top">
-                                                                <IconButton>
-                                                                    <HelpIcon color="primary"/>
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        </InputAdornment>
-                                                    }}
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
-                                                        }
-                                                            setHormoneDetails({
-                                                                ...hormoneDetails,testosterone: {
-                                                                    value: value,
-                                                                    measure: hormoneDetails.testosterone.measure
-                                                                }
-                                                            })
-                                                    }}
-                                                />
-                                                <FormHelperText>
-                                                    {hormoneDetails.gender === 'Male' ?
-                                                        <>
-                                                            Total Testosterone Normal: 7.6 – 31.4 nmol/L<br/>Free Testosterone Normal: 0.4 – 7.1 pg/mL
-                                                    </> :
-                                                        <>
-                                                            Total Testosterone Normal: 0 – 1.8 nmol/L<br/>
-                                                            Free Testosterone Normal: 0.4 – 7.1 pg/mL
-                                                        </>}
-                                                </FormHelperText>
-                                            </Grid>
-                                            <Grid item xs="auto" md={2} sx={{ml:1}}>
-                                                <TextField
-                                                    select
-                                                    size="small"
-                                                    label="Measure"
-                                                    value={hormoneDetails.testosterone.measure}
-                                                    onChange={handleMeasure}
-                                                    helperText="Select Measure"
-                                                >
-                                                    {testosteroneValues.map((option) => (
-                                                        <MenuItem key={option.value} value={option.value}>
-                                                            {option.label}
-                                                        </MenuItem>
-                                                    ))
+                                        <Grid item xs={3} md={6}>
+                                            <TextField
+                                                size="small"
+                                                fullWidth
+                                                value={hormoneDetails.FBC.MCH}
+                                                type="number"
+                                                label="MCH"
+                                                onChange={(event) => {
+                                                    let value = event.target.value;
+                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                        value = '0';
                                                     }
-                                                </TextField>
-                                            </Grid>
-                                    </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item container xs={3} md={4} paddingTop={1}>
-                                            <Typography>FBC
-                                                <Tooltip title={fbcText} placement="top">
-                                                    <IconButton sx={{padding:0,marginBottom:0.5}}>
-                                                        <HelpIcon color="primary"/>
-                                                    </IconButton>
-                                                </Tooltip>
-                                                :</Typography>
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, FBC: {
+                                                            MCV: hormoneDetails.FBC.MCV,
+                                                            MCH: value,
+                                                            MCHC: hormoneDetails.FBC.MCHC,
+                                                            RDW: hormoneDetails.FBC.RDW
+                                                        }
+                                                    })
+                                                }}
+                                            />
                                         </Grid>
-                                        <Grid item container xs={9} md={8} spacing={1}>
-                                            <Grid item xs={3} md={6}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    value={hormoneDetails.FBC.MCV}
-                                                    type="number"
-                                                    label="MCV"
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
+                                        <Grid item xs={3} md={6}>
+                                            <TextField
+                                                size="small"
+                                                fullWidth
+                                                value={hormoneDetails.FBC.MCHC}
+                                                type="number"
+                                                label="MCHC"
+                                                onChange={(event) => {
+                                                    let value = event.target.value;
+                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                        value = '0';
+                                                    }
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, FBC: {
+                                                            MCV: hormoneDetails.FBC.MCV,
+                                                            MCH: hormoneDetails.FBC.MCH,
+                                                            MCHC: value,
+                                                            RDW: hormoneDetails.FBC.RDW
                                                         }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,FBC: {
-                                                                MCV: value,
-                                                                MCH: hormoneDetails.FBC.MCH,
-                                                                MCHC: hormoneDetails.FBC.MCHC,
-                                                                RDW: hormoneDetails.FBC.RDW
-                                                            }
-                                                        })
-                                                    }}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={3} md={6}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    value={hormoneDetails.FBC.MCH}
-                                                    type="number"
-                                                    label="MCH"
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
-                                                        }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,FBC: {
-                                                                MCV: hormoneDetails.FBC.MCV,
-                                                                MCH:value,
-                                                                MCHC: hormoneDetails.FBC.MCHC,
-                                                                RDW: hormoneDetails.FBC.RDW
-                                                            }
-                                                        })
-                                                    }}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={3} md={6}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    value={hormoneDetails.FBC.MCHC}
-                                                    type="number"
-                                                    label="MCHC"
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
-                                                        }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,FBC: {
-                                                                MCV: hormoneDetails.FBC.MCV,
-                                                                MCH: hormoneDetails.FBC.MCH,
-                                                                MCHC: value,
-                                                                RDW: hormoneDetails.FBC.RDW
-                                                            }
-                                                        })
-                                                    }}
-                                                />
-                                            </Grid>
-                                            <Grid item xs={3} md={6}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    type="number"
-                                                    label="RDW"
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
-                                                        }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,FBC: {
-                                                                MCV: hormoneDetails.FBC.MCV,
-                                                                MCH: hormoneDetails.FBC.MCH,
-                                                                MCHC: hormoneDetails.FBC.MCHC,
-                                                                RDW: value
-                                                            }
-                                                        })
-                                                    }}
-                                                />
-                                            </Grid>
+                                                    })
+                                                }}
+                                            />
                                         </Grid>
-                                    </Grid>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={3} md={3} paddingTop={1}>
-                                            <Typography>Vitamin D:</Typography>
-                                        </Grid>
-                                        <Grid item xs={9} md={9}>
+                                        <Grid item xs={3} md={6}>
                                             <TextField
                                                 size="small"
                                                 fullWidth
                                                 type="number"
-                                                value={hormoneDetails.vitaminD}
+                                                label="RDW"
+                                                onChange={(event) => {
+                                                    let value = event.target.value;
+                                                    if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                        value = '0';
+                                                    }
+                                                    setHormoneDetails({
+                                                        ...hormoneDetails, FBC: {
+                                                            MCV: hormoneDetails.FBC.MCV,
+                                                            MCH: hormoneDetails.FBC.MCH,
+                                                            MCHC: hormoneDetails.FBC.MCHC,
+                                                            RDW: value
+                                                        }
+                                                    })
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                                <Grid item container xs={12} md={6}>
+                                    <Grid item xs={3} md={3} paddingTop={1}>
+                                        <Typography>Vitamin D:</Typography>
+                                    </Grid>
+                                    <Grid item xs={9} md={9}>
+                                        <TextField
+                                            size="small"
+                                            fullWidth
+                                            type="number"
+                                            value={hormoneDetails.vitaminD}
+                                            InputProps={{
+                                                endAdornment: <InputAdornment position="end">
+                                                    nmol/L
+                                                    <Tooltip title={vitaminDText} placement="top">
+                                                        <IconButton>
+                                                            <HelpIcon color="primary"/>
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                </InputAdornment>
+                                            }}
+                                            onChange={(event) => {
+                                                let value = event.target.value;
+                                                if (parseInt(event.target.value) < 0 || event.target.value === '00') {
+                                                    value = '0';
+                                                }
+                                                setHormoneDetails({
+                                                    ...hormoneDetails, vitaminD: value
+                                                })
+                                            }}
+                                        />
+                                        <FormHelperText>25-hydroxyvitamin D<br/>{`Deficient: <25 nmol/L`}<br/>Insufficient:
+                                            25 – 49 nmol/L<br/>Normal: 50 – 200 nmol/L</FormHelperText>
+                                    </Grid>
+                                </Grid>
+                                {
+                                    hormoneDetails.gender === 'Male' &&
+                                    <Grid item container xs={12} md={6}>
+                                        <Grid item xs={3} md={4} paddingTop={1}>
+                                            <Typography>SHBG:</Typography>
+                                        </Grid>
+                                        <Grid item xs={9} md={8}>
+                                            <TextField
+                                                size="small"
+                                                fullWidth
+                                                type="number"
+                                                value={hormoneDetails.SHBG}
                                                 InputProps={{
-                                                    endAdornment:<InputAdornment position="end">
+                                                    endAdornment: <InputAdornment position="end">
                                                         nmol/L
-                                                        <Tooltip title={vitaminDText} placement="top">
+                                                        <Tooltip title={shbgText} placement="top">
                                                             <IconButton>
                                                                 <HelpIcon color="primary"/>
                                                             </IconButton>
@@ -588,66 +650,32 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
                                                         value = '0';
                                                     }
                                                     setHormoneDetails({
-                                                        ...hormoneDetails,vitaminD: value
+                                                        ...hormoneDetails, SHBG: value
                                                     })
                                                 }}
                                             />
-                                            <FormHelperText>25-hydroxyvitamin D<br/>{`Deficient: <25 nmol/L`}<br/>Insufficient: 25 – 49 nmol/L<br/>Normal: 50 – 200 nmol/L</FormHelperText>
+                                            <FormHelperText>Normal: 16 – 55 nmol/L</FormHelperText>
                                         </Grid>
                                     </Grid>
-                                    {
-                                        hormoneDetails.gender === 'Male' &&
-                                        <Grid item container xs={12} md={6}>
-                                            <Grid item xs={3} md={4} paddingTop={1}>
-                                                <Typography>SHBG:</Typography>
-                                            </Grid>
-                                            <Grid item xs={9} md={8}>
-                                                <TextField
-                                                    size="small"
-                                                    fullWidth
-                                                    type="number"
-                                                    value={hormoneDetails.SHBG}
-                                                    InputProps={{
-                                                        endAdornment:<InputAdornment position="end">
-                                                            nmol/L
-                                                            <Tooltip title={shbgText} placement="top">
-                                                                <IconButton>
-                                                                    <HelpIcon color="primary"/>
-                                                                </IconButton>
-                                                            </Tooltip>
-                                                        </InputAdornment>
-                                                    }}
-                                                    onChange={(event) => {
-                                                        let value = event.target.value;
-                                                        if (parseInt(event.target.value) < 0 || event.target.value === '00') {
-                                                            value = '0';
-                                                        }
-                                                        setHormoneDetails({
-                                                            ...hormoneDetails,SHBG: value
-                                                        })
-                                                    }}
-                                                />
-                                                <FormHelperText>Normal: 16 – 55 nmol/L</FormHelperText>
-                                            </Grid>
-                                        </Grid>
-                                    }
-                                    {showAlert &&
-                                        <Grid item xs={12}>
-                                            <Alert severity="warning">You have not entered any values!</Alert>
-                                        </Grid>
-                                    }
-                                </>
-                                :
-                                <Grid item xs={12}>
-                                    <Typography sx={{opacity: 0.55}}>Please Select your gender</Typography>
-                                </Grid>
-                        }
+                                }
+                                {showAlert &&
+                                    <Grid item xs={12}>
+                                        <Alert severity="warning">You have not entered any values!</Alert>
+                                    </Grid>
+                                }
+                            </>
+                            :
+                            <Grid item xs={12}>
+                                <Typography sx={{opacity: 0.55}}>Please Select your gender</Typography>
+                            </Grid>
+                    }
                 </Grid>
             </DialogContent>
             <DialogActions>
                 <Grid container justifyContent="space-between">
                     <Grid xs={4} item>
-                        <IconButton onClick={removeHormoneDetails} disabled={!recordData.hormoneDetails.populated} variant="contained" color="primary">
+                        <IconButton onClick={removeHormoneDetails} disabled={!recordData.hormoneDetails.populated}
+                                    variant="contained" color="primary">
                             <DeleteIcon/>
                         </IconButton>
                     </Grid>
@@ -656,7 +684,8 @@ const HormoneDialog = ({hormoneDetails,setHormoneDetails,recordData,setRecordDat
                             <Button variant="contained" onClick={handleDialogClose}>Cancel</Button>
                         </Grid>
                         <Grid item>
-                            <Button variant="contained" disabled={!hormoneDetails.gender} onClick={handleDialogSubmit}>Confirm</Button>
+                            <Button variant="contained" disabled={!hormoneDetails.gender}
+                                    onClick={handleDialogSubmit}>Confirm</Button>
                         </Grid>
                     </Grid>
                 </Grid>

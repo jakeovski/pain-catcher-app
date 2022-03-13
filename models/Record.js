@@ -5,69 +5,69 @@ import mongoose from "mongoose";
  * @type {*}
  */
 const PainRecord = mongoose.Schema({
-    id:{
-        type:String
+    id: {
+        type: String
     },
-    diaryId:{
-        type:String,
-        required:true,
+    diaryId: {
+        type: String,
+        required: true,
     },
-    title:{
-        type:String,
-        required:true
+    title: {
+        type: String,
+        required: true
     },
-    painLevel:{
-        type:Number,
-        required:true,
+    painLevel: {
+        type: Number,
+        required: true,
     },
-    areas:{
-        type:Array,
+    areas: {
+        type: Array,
     },
-    triggers:{
-        type:Array,
+    triggers: {
+        type: Array,
     },
-    activityLevel:{
-        type:Number,
+    activityLevel: {
+        type: Number,
     },
-    medications:{
-        type:Array,
+    medications: {
+        type: Array,
     },
     symptoms: {
-        type:Array,
+        type: Array,
     },
-    mood:{
-        type:Number,
+    mood: {
+        type: Number,
     },
-    sleep:{
-        type:Object,
+    sleep: {
+        type: Object,
     },
-    diet:{
-        type:Array,
+    diet: {
+        type: Array,
     },
-    hormoneDetails:{
-        type:Object,
+    hormoneDetails: {
+        type: Object,
     },
-    description:{
-        type:String,
+    description: {
+        type: String,
     },
     frontBodyImage: {
-        type:String,
+        type: String,
     },
     backBodyImage: {
-        type:String,
+        type: String,
     },
-    recordStartDate:{
-        type:Date,
-        required:true,
+    recordStartDate: {
+        type: Date,
+        required: true,
     },
     recordEndDate: {
-        type:Date,
-        required:true
+        type: Date,
+        required: true
     },
-    allDay:{
-        type:Boolean,
-        required:true
+    allDay: {
+        type: Boolean,
+        required: true
     }
 });
 
-export default mongoose.models.PainRecord || mongoose.model("PainRecord",PainRecord);
+export default mongoose.models.PainRecord || mongoose.model("PainRecord", PainRecord);

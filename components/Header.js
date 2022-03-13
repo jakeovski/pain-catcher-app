@@ -12,9 +12,9 @@ import {signOut} from "next-auth/react";
  * @returns {JSX.Element}
  * @constructor
  */
-const Header = ({darkState,session}) => {
+const Header = ({darkState, session}) => {
 
-    const [anchorEl,setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     /**
      * Handles menu opening
@@ -31,11 +31,11 @@ const Header = ({darkState,session}) => {
         setAnchorEl(null);
     }
 
-    return(
-        <AppBar position="static" color="primary" sx={{marginTop:'1vh', borderRadius:'10px'}}>
+    return (
+        <AppBar position="static" color="primary" sx={{marginTop: '1vh', borderRadius: '10px'}}>
             <Toolbar
                 sx={{
-                    justifyContent:'space-between'
+                    justifyContent: 'space-between'
                 }}
             >
                 {darkState ?
@@ -51,38 +51,39 @@ const Header = ({darkState,session}) => {
                     />
                 }
                 <div style={{
-                    display:'flex',
-                    flexDirection:'row',
-                    alignItems:'center'
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center'
                 }}>
-                        <Typography variant="body1" sx={{textAlign:'end'}}>{session.user.firstName} {session.user.lastName}</Typography>
+                    <Typography variant="body1"
+                                sx={{textAlign: 'end'}}>{session.user.firstName} {session.user.lastName}</Typography>
 
-                        <IconButton
-                            size="large"
-                            aria-label="current user"
-                            aria-controls="menu-appbar"
-                            aria-haspopup="true"
-                            onClick={handleMenu}
-                            color="inherit"
-                        >
-                            <AccountCircle/>
-                        </IconButton>
+                    <IconButton
+                        size="large"
+                        aria-label="current user"
+                        aria-controls="menu-appbar"
+                        aria-haspopup="true"
+                        onClick={handleMenu}
+                        color="inherit"
+                    >
+                        <AccountCircle/>
+                    </IconButton>
                     <Menu
                         id="menu-appbar"
                         anchorEl={anchorEl}
                         anchorOrigin={{
-                            vertical:'bottom',
-                            horizontal:'right',
+                            vertical: 'bottom',
+                            horizontal: 'right',
                         }}
                         keepMounted
                         transformOrigin={{
-                            vertical:'top',
-                            horizontal:'right'
+                            vertical: 'top',
+                            horizontal: 'right'
                         }}
                         open={Boolean(anchorEl)}
                         onClose={handleClose}
-                        >
-                        <MenuItem onClick={handleClose}>Profile</MenuItem>
+                    >
+                        {/*<MenuItem onClick={handleClose}>Profile</MenuItem>*/}
                         <MenuItem onClick={signOut}>Sign Out</MenuItem>
                     </Menu>
                 </div>

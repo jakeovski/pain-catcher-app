@@ -9,14 +9,14 @@ import {Container, Tooltip, Typography} from "@mui/material";
  * @constructor
  */
 const Footer = () => {
-    return(
+    return (
         <Container maxWidth="false" sx={{
-            textAlign:"center",
+            textAlign: "center",
             position: 'absolute',
-            bottom:0,
+            bottom: 0,
             width: '100% !important',
-            padding:'0.5em',
-            backgroundColor:'rgba(0,0,0,0.04)'
+            padding: '0.5em',
+            backgroundColor: 'rgba(0,0,0,0.04)'
         }}>
             <Tooltip title={`Pain Catcher ver. ${packageJson.version}`} arrow>
                 <Typography variant="body1">Copyright © 2022 Robert Gordon University</Typography>

@@ -5,9 +5,6 @@ import Login from "../components/Login";
 import Footer from "../components/Footer";
 import {useRouter} from "next/router";
 
-//TODO: Add Footer with version number
-//TODO: Comment the Component
-//TODO: For each request add the finally call
 const Index = ({darkState}) => {
 
     const {status} = useSession();

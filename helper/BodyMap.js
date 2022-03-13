@@ -1,14 +1,14 @@
-import React, {useMemo, useState} from "react";
+import React from "react";
 import ImageMapper from 'react-img-mapper';
 import {useTheme} from "@mui/material";
-import {FRONT_AREAS,BACK_AREAS} from '../constants/BodyAreas';
+import {BACK_AREAS, FRONT_AREAS} from '../constants/BodyAreas';
 
-const FrontBody = ({handleSelect,toggleFront}) => {
+const FrontBody = ({handleSelect}) => {
     const theme = useTheme();
     const URL = `/FrontBody.png`;
     const color = `${theme.palette.secondary.main}70`;
     const MAP = {
-        name:'front-map',
+        name: 'front-map',
         areas: FRONT_AREAS(color)
     }
 
@@ -19,18 +19,18 @@ const FrontBody = ({handleSelect,toggleFront}) => {
                      responsive
                      stayMultiHighlighted
                      toggleHighlighted
-                     onClick={(area,index,event) => handleSelect(area,event)}
-                     />
+                     onClick={(area, index, event) => handleSelect(area, event)}
+        />
     )
 }
 export default React.memo(FrontBody);
 
-export const BackBody = ({handleSelect,toggleFront}) => {
+export const BackBody = ({handleSelect}) => {
     const theme = useTheme();
     const URL = '/BackBody.png';
     const color = `${theme.palette.secondary.main}70`;
     const MAP = {
-        name:'back-map',
+        name: 'back-map',
         areas: BACK_AREAS(color)
     }
 
@@ -41,8 +41,8 @@ export const BackBody = ({handleSelect,toggleFront}) => {
                      responsive
                      stayMultiHighlighted
                      toggleHighlighted
-                     onClick={(area,index,event) => handleSelect(area,event)}
-                     />
+                     onClick={(area, index, event) => handleSelect(area, event)}
+        />
     )
 }
 

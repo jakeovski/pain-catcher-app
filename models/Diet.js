@@ -2,18 +2,18 @@ import mongoose from "mongoose";
 
 
 const diet = mongoose.Schema({
-    id:{
-        type:String,
+    id: {
+        type: String,
     },
-    userId:{
-        type:String,
-        required:true
+    userId: {
+        type: String,
+        required: true
     },
-    productName:{
-        type:String,
-        required:true,
-        unique:true
+    productName: {
+        type: String,
+        required: true,
+        unique: true
     }
 });
 
-export default mongoose.models.diet || mongoose.model("diet",diet);
+export default mongoose.models.diet || mongoose.model("diet", diet);

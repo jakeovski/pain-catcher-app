@@ -9,18 +9,11 @@ import Head from 'next/head';
 
 //TODO: Comment every class
 //TODO: Separate chunks of code into separate blocks
-//TODO: Clean up
 //TODO: Make responsive for 4K
-function MyApp({Component, pageProps:{session,...pageProps}}) {
+function MyApp({Component, pageProps: {session, ...pageProps}}) {
 
     const [darkState, setDarkState] = useState(false);
     const paletteType = darkState ? "dark" : "light";
-    // const [selectedDates,setSelectedDates] = useState({
-    //     startDate:null,
-    //     endDate:null,
-    //     startStr:null,
-    //     endStr:null
-    // });
 
 
     const theme = createTheme({
@@ -37,39 +30,39 @@ function MyApp({Component, pageProps:{session,...pageProps}}) {
                 light: darkState ? Palette.secondaryColor.dark.light : Palette.secondaryColor.light.light
             },
         },
-            components: {
-                MuiCssBaseline: {
-                    styleOverrides: {
-                        body: {
-                            backgroundImage: `url(${
-                                darkState ? "/darkBackground.svg" : "/lightBackground.svg"
-                            })`
-                        }
-                    }
-                },
-                MuiOutlinedInput: {
-                    styleOverrides: {
-                        input: {
-                            "&:-webkit-autofill": {
-                                "WebkitBoxShadow": `${darkState && "0 0 0 100px #292929"} inset`,
-                                "WebkitTextFillColor": `${darkState && "#fff"}`
-                            }
-                        }
+        components: {
+            MuiCssBaseline: {
+                styleOverrides: {
+                    body: {
+                        backgroundImage: `url(${
+                            darkState ? "/darkBackground.svg" : "/lightBackground.svg"
+                        })`
                     }
                 }
             },
+            MuiOutlinedInput: {
+                styleOverrides: {
+                    input: {
+                        "&:-webkit-autofill": {
+                            "WebkitBoxShadow": `${darkState && "0 0 0 100px #292929"} inset`,
+                            "WebkitTextFillColor": `${darkState && "#fff"}`
+                        }
+                    }
+                }
+            }
+        },
     });
 
     return (
         <SessionProvider session={session}>
-        <ThemeProvider theme={theme}>
-            <Head>
-                <title>Pain Catcher</title>
-            </Head>
-            <CssBaseline/>
-            <Component {...pageProps}
-                       darkState={darkState}/>
-        </ThemeProvider>
+            <ThemeProvider theme={theme}>
+                <Head>
+                    <title>Pain Catcher</title>
+                </Head>
+                <CssBaseline/>
+                <Component {...pageProps}
+                           darkState={darkState}/>
+            </ThemeProvider>
         </SessionProvider>
     );
 }

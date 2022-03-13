@@ -3,11 +3,20 @@ import {
     Alert,
     Box,
     Button,
-    CircularProgress, FormControl, FormControlLabel,
-    Grid, IconButton, InputLabel,
-    LinearProgress, MenuItem,
-    Paper, Select, Skeleton, Switch,
-    TextField, Tooltip,
+    CircularProgress,
+    FormControl,
+    FormControlLabel,
+    Grid,
+    IconButton,
+    InputLabel,
+    LinearProgress,
+    MenuItem,
+    Paper,
+    Select,
+    Skeleton,
+    Switch,
+    TextField,
+    Tooltip,
     Typography,
     useTheme
 } from "@mui/material";
@@ -22,63 +31,71 @@ import {LoadingButton} from "@mui/lab";
 import randomColor from 'randomcolor';
 import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import {
+    Bar,
     CartesianGrid,
     ComposedChart,
+    Legend,
+    Line,
     ResponsiveContainer,
-    XAxis,
-    YAxis,
     Tooltip as ChartTooltip,
-    Legend, Line, Bar
+    XAxis,
+    YAxis
 } from "recharts";
 
+/**
+ * Dashboard View
+ * @param session
+ * @returns {JSX.Element}
+ * @constructor
+ */
 const Dashboard = ({session}) => {
-    const theme = useTheme();
-    const router = useRouter();
+    //Constants
     const CHARACTER_LIMIT = 200;
     const NAME_LIMIT = 20;
-    const [anchorEl, setAnchorEl] = useState(null);
-    const openColorPicker = Boolean(anchorEl);
-    const id = openColorPicker ? 'simple-popover' : undefined;
 
+    //Hooks
+    const theme = useTheme();
+    const router = useRouter();
+
+    //States
+    const [modifyDiary, setModifyDiary] = useState(null);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [dialogDiaryId, setDialogDiaryId] = useState(null);
+    const [dialogTitleText, setDialogTitleText] = useState(null);
+    const [dialogContentText, setDialogContentText] = useState(null);
+    const [selectedDiaryToAnalyze, setSelectedDiaryToAnalyze] = useState('');
+    const [toggleAnalysis, setToggleAnalysis] = useState(false);
+    const [analysisLoading, setAnalysisLoading] = useState(false);
+    const [chartData, setChartData] = useState([]);
+    const [showPainLevel, setShowPainLevel] = useState(true);
+    const [showActivity, setShowActivity] = useState(false);
+    const [showMood, setShowMood] = useState(false);
+    const [showMedication, setShowMedication] = useState(false);
+    const [showDiet, setShowDiet] = useState(false);
+    const [showSymptoms, setShowSymptoms] = useState(false);
+    const [showTriggers, setShowTriggers] = useState(false);
+    const [uniqueMedications, setUniqueMedications] = useState([]);
+    const [uniqueDiet, setUniqueDiet] = useState([]);
+    const [uniqueSymptoms, setUniqueSymptoms] = useState([]);
+    const [uniqueTriggers, setUniqueTriggers] = useState([]);
+    const [analysisData, setAnalysisData] = useState({});
     const [newDiaryLoading, setNewDiaryLoading] = useState(false);
     const [diaryData, setDiaryData] = useState({
         data: undefined,
         type: '',
         message: ''
     });
-
-    const [modifyDiary,setModifyDiary] = useState(null);
-
-    const [deleteDialogOpen,setDeleteDialogOpen] = useState(false);
-    const [dialogDiaryId,setDialogDiaryId] = useState(null);
-    const [dialogTitleText,setDialogTitleText] = useState(null);
-    const [dialogContentText,setDialogContentText] = useState(null);
-    const [selectedDiaryToAnalyze,setSelectedDiaryToAnalyze] = useState('');
-    const [toggleAnalysis,setToggleAnalysis] = useState(false);
-    const [analysisLoading,setAnalysisLoading] = useState(false);
-    //TODO:Remove if not needed
-    const [recordsForAnalysis,setRecordsForAnalysis] = useState([]);
-    const [chartData,setChartData] = useState([]);
-    const [showPainLevel,setShowPainLevel] = useState(true);
-    const [showActivity,setShowActivity] = useState(false);
-    const [showMood,setShowMood] = useState(false);
-    const [showMedication,setShowMedication] = useState(false);
-    const [showDiet,setShowDiet] = useState(false);
-    const [showSymptoms,setShowSymptoms] = useState(false);
-    const [showTriggers,setShowTriggers] = useState(false);
-    const [uniqueMedications,setUniqueMedications] = useState([]);
-    const [uniqueDiet,setUniqueDiet] = useState([]);
-    const [uniqueSymptoms,setUniqueSymptoms] = useState([]);
-    const [uniqueTriggers,setUniqueTriggers] = useState([]);
-    const [analysisData,setAnalysisData] = useState({});
-
-
+    const [anchorEl, setAnchorEl] = useState(null);
+    const openColorPicker = Boolean(anchorEl);
+    const id = openColorPicker ? 'simple-popover' : undefined;
     const [newDiary, setNewDiary] = useState({
         name: '',
         description: '',
         color: theme.palette.primary.main
     });
 
+
+    //Actions
     const handleDialogOpen = (event) => {
         setAnchorEl(event.currentTarget);
     }
@@ -99,65 +116,7 @@ const Dashboard = ({session}) => {
         });
     }
 
-    const handleNewDiary = async (e) => {
-        e.preventDefault();
-        setNewDiaryLoading(true);
-        if (modifyDiary) {
-            const res = await fetch('/api/diary/modify', {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: session.user.id,
-                    diaryId: modifyDiary,
-                    diary: newDiary
-                })
-            });
-            const data = await res.json();
-            setDiaryData(data);
-            setModifyDiary(null);
-        }else {
-            const res = await fetch('/api/diary/add', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: session.user.id,
-                    diary: newDiary
-                })
-            });
-            const data = await res.json();
-            setDiaryData(data);
-        }
-        setNewDiaryLoading(false);
-        setNewDiary({
-            name: '',
-            description: '',
-            color: theme.palette.primary.main
-        });
-    }
-
-    const handleDiaryDelete = async (key) => {
-        //setHideDiaryLoading(false);
-        const res = await fetch('/api/diary/delete', {
-            method:'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId:session.user.id,
-                diaryId:key
-            })
-        });
-
-        const data = await res.json();
-        setDiaryData(data);
-        setDeleteDialogOpen(false);
-    }
-
-    const handleDeleteDialogOpen = (key,name) => {
+    const handleDeleteDialogOpen = (key, name) => {
         setDialogDiaryId(key);
         setDialogTitleText(`Delete ${name} Diary?`);
         setDialogContentText(`${name} will be permanently deleted.`);
@@ -168,9 +127,9 @@ const Dashboard = ({session}) => {
         setDeleteDialogOpen(false);
     }
 
-    const handleModifyDiary = (id,name,description,color) => {
+    const handleModifyDiary = (id, name, description, color) => {
         setNewDiary({
-            name:name,
+            name: name,
             description: description,
             color: color
         });
@@ -185,27 +144,10 @@ const Dashboard = ({session}) => {
         setModifyDiary(null);
     }
 
-    const handleDiaryNavigation = async(id) => {
+    const handleDiaryNavigation = async (id) => {
         setNewDiaryLoading(true);
         await router.push(`/diary/${id}`);
     }
-
-    useEffect(() => {
-        async function getDiaries() {
-            const res = await fetch('/api/diary', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-            });
-
-            return await res.json();
-        }
-
-        getDiaries().then((data) => {
-            setDiaryData(data);
-        })
-    }, []);
 
     const handleSelectedDiaryToAnalyzeChange = async (event) => {
         setSelectedDiaryToAnalyze(event.target.value);
@@ -215,74 +157,9 @@ const Dashboard = ({session}) => {
         console.log(canAnalyze);
         if (!canAnalyze) {
             setToggleAnalysis(false);
-        }else {
+        } else {
             await getDataForAnalysis(event.target.value);
         }
-    }
-
-    const getDataForAnalysis = async(diaryId) => {
-        setToggleAnalysis(true);
-        setAnalysisLoading(true);
-        const res = await fetch('/api/record', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId:session.user.id,
-                diaryId:diaryId,
-                analysis:true,
-            })
-        });
-
-        const data = await res.json();
-        console.log(data);
-        setRecordsForAnalysis(data.data.records);
-        const chartDataTemp = [];
-        let uniqueMedications =[];
-        let uniqueDiet =[];
-        let uniqueSymptoms =[];
-        let uniqueTriggers = [];
-        for (const record of data.data.records) {
-            let dataEntry = {
-                name: DateTime.fromISO(record.recordStartDate).toFormat('dd/LL/yyyy HH:mm'),
-                painLevel:record.painLevel,
-                activity:record.activityLevel,
-                mood:record.mood,
-            }
-            for(const medication of record.medications){
-                if(!uniqueMedications.includes(medication)){
-                    uniqueMedications.push(medication);
-                }
-                dataEntry[medication] = record.painLevel
-            }
-            for(const product of record.diet){
-                if(!uniqueDiet.includes(product)){
-                    uniqueDiet.push(product);
-                }
-                dataEntry[product] = record.painLevel
-            }
-            for(const symptom of record.symptoms) {
-                if(!uniqueSymptoms.includes(symptom)){
-                    uniqueSymptoms.push(symptom);
-                }
-                dataEntry[symptom] = record.painLevel;
-            }
-            for(const trigger of record.triggers) {
-                if (!uniqueTriggers.includes(trigger)){
-                    uniqueTriggers.push(trigger);
-                }
-                dataEntry[trigger] = record.painLevel;
-            }
-            chartDataTemp.push(dataEntry);
-        }
-        setUniqueTriggers(uniqueTriggers);
-        setUniqueSymptoms(uniqueSymptoms);
-        setUniqueMedications(uniqueMedications);
-        setUniqueDiet(uniqueDiet);
-        setChartData(chartDataTemp);
-        setAnalysisData(data.data.analysis);
-        setAnalysisLoading(false);
     }
 
     const handleShowActivity = (event) => {
@@ -340,9 +217,165 @@ const Dashboard = ({session}) => {
         setShowTriggers(event.target.checked);
     }
 
+    //Requests
+    /**
+     * Send a request to the backend to create new diary
+     * @param e
+     * @returns {Promise<void>}
+     */
+    const handleNewDiary = async (e) => {
+        e.preventDefault();
+        setNewDiaryLoading(true);
+        if (modifyDiary) {
+            const res = await fetch('/api/diary/modify', {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: session.user.id,
+                    diaryId: modifyDiary,
+                    diary: newDiary
+                })
+            });
+            const data = await res.json();
+            setDiaryData(data);
+            setModifyDiary(null);
+        } else {
+            const res = await fetch('/api/diary/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: session.user.id,
+                    diary: newDiary
+                })
+            });
+            const data = await res.json();
+            setDiaryData(data);
+        }
+        setNewDiaryLoading(false);
+        setNewDiary({
+            name: '',
+            description: '',
+            color: theme.palette.primary.main
+        });
+    }
+
+    /**
+     * Send a request to the backend to delete the diary
+     * @param key
+     * @returns {Promise<void>}
+     */
+    const handleDiaryDelete = async (key) => {
+        const res = await fetch('/api/diary/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: session.user.id,
+                diaryId: key
+            })
+        });
+
+        const data = await res.json();
+        setDiaryData(data);
+        setDeleteDialogOpen(false);
+    }
+
+    /**
+     * Send a request to the backend for the analysis data
+     * @param diaryId
+     * @returns {Promise<void>}
+     */
+    const getDataForAnalysis = async (diaryId) => {
+        setToggleAnalysis(true);
+        setAnalysisLoading(true);
+        const res = await fetch('/api/record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                userId: session.user.id,
+                diaryId: diaryId,
+                analysis: true,
+            })
+        });
+
+        const data = await res.json();
+        const chartDataTemp = [];
+        let uniqueMedications = [];
+        let uniqueDiet = [];
+        let uniqueSymptoms = [];
+        let uniqueTriggers = [];
+        for (const record of data.data.records) {
+            let dataEntry = {
+                name: DateTime.fromISO(record.recordStartDate).toFormat('dd/LL/yyyy HH:mm'),
+                painLevel: record.painLevel,
+                activity: record.activityLevel,
+                mood: record.mood,
+            }
+            for (const medication of record.medications) {
+                if (!uniqueMedications.includes(medication)) {
+                    uniqueMedications.push(medication);
+                }
+                dataEntry[medication] = record.painLevel
+            }
+            for (const product of record.diet) {
+                if (!uniqueDiet.includes(product)) {
+                    uniqueDiet.push(product);
+                }
+                dataEntry[product] = record.painLevel
+            }
+            for (const symptom of record.symptoms) {
+                if (!uniqueSymptoms.includes(symptom)) {
+                    uniqueSymptoms.push(symptom);
+                }
+                dataEntry[symptom] = record.painLevel;
+            }
+            for (const trigger of record.triggers) {
+                if (!uniqueTriggers.includes(trigger)) {
+                    uniqueTriggers.push(trigger);
+                }
+                dataEntry[trigger] = record.painLevel;
+            }
+            chartDataTemp.push(dataEntry);
+        }
+        setUniqueTriggers(uniqueTriggers);
+        setUniqueSymptoms(uniqueSymptoms);
+        setUniqueMedications(uniqueMedications);
+        setUniqueDiet(uniqueDiet);
+        setChartData(chartDataTemp);
+        setAnalysisData(data.data.analysis);
+        setAnalysisLoading(false);
+    }
+
+    /**
+     * useEffect that fetches the diary when the page loads
+     */
+    useEffect(() => {
+        async function getDiaries() {
+            const res = await fetch('/api/diary', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            });
+
+            return await res.json();
+        }
+
+        getDiaries().then((data) => {
+            setDiaryData(data);
+        })
+    }, []);
+
     return (
-        <Grid container spacing={2} sx={{marginTop: '2vh',marginBottom:'2vh'}}>
-            <Grid item xs={12} md={8} order={{xs:2,md:1}}>
+        <Grid container spacing={2} sx={{marginTop: '2vh', marginBottom: '2vh'}}>
+            <Grid item xs={12} md={8} order={{xs: 2, md: 1}}>
                 <Paper elevation={3} sx={{
                     display: 'flex',
                     flexDirection: 'row',
@@ -378,18 +411,21 @@ const Dashboard = ({session}) => {
                                                             <Typography>{`Created at ${DateTime.fromISO(data.createdDate).toFormat('dd/LL/yyyy')} ${DateTime.fromISO(data.createdDate).toFormat('HH:mm')}`}</Typography>
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <Typography>Number of Records: {data.numberOfRecords}</Typography>
+                                                            <Typography>Number of
+                                                                Records: {data.numberOfRecords}</Typography>
                                                         </Grid>
                                                         <Grid item xs={12}>
-                                                            <Typography>Last record: {data.lastRecord ? DateTime.fromISO(data.lastRecord).toFormat('dd/LL/yyyy HH:mm') : 'No Records'}</Typography>
+                                                            <Typography>Last
+                                                                record: {data.lastRecord ? DateTime.fromISO(data.lastRecord).toFormat('dd/LL/yyyy HH:mm') : 'No Records'}</Typography>
                                                         </Grid>
                                                     </Grid>
                                                     <Grid container item xs={12} justifyContent="space-between">
                                                         <Grid item xs={2}>
                                                             <Tooltip title="Open" arrow placement="top">
-                                                                <IconButton onClick={() => handleDiaryNavigation(data._id)}>
+                                                                <IconButton
+                                                                    onClick={() => handleDiaryNavigation(data._id)}>
                                                                     <OpenInFullIcon sx={{
-                                                                        color:getContrast(data.color)
+                                                                        color: getContrast(data.color)
                                                                     }}/>
                                                                 </IconButton>
                                                             </Tooltip>
@@ -410,7 +446,8 @@ const Dashboard = ({session}) => {
                                                         </Grid>
                                                         <Grid item xs={2} textAlign="end">
                                                             <Tooltip title="Delete" arrow placement="top">
-                                                                <IconButton onClick={() => handleDeleteDialogOpen(data._id,data.name)}>
+                                                                <IconButton
+                                                                    onClick={() => handleDeleteDialogOpen(data._id, data.name)}>
                                                                     <DeleteIcon sx={{
                                                                         color: getContrast(data.color)
                                                                     }}/>
@@ -438,7 +475,7 @@ const Dashboard = ({session}) => {
                     confirmAction={handleDiaryDelete}
                 />
             </Grid>
-            <Grid item xs={12} md={4} order={{xs:1,md:2}}>
+            <Grid item xs={12} md={4} order={{xs: 1, md: 2}}>
                 <Paper elevation={3} sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -448,7 +485,7 @@ const Dashboard = ({session}) => {
                     <form onSubmit={handleNewDiary}>
                         <Typography fontWeight="bold" variant="h5" sx={{paddingBottom: '2vh'}}>
                             {modifyDiary ? `Modify Diary`
-                            : `Add New Diary`}
+                                : `Add New Diary`}
                         </Typography>
                         <TextField
                             name="name"
@@ -523,14 +560,15 @@ const Dashboard = ({session}) => {
 
                         </Grid>
 
-                        <LoadingButton loading={newDiaryLoading} type="submit" variant="contained" fullWidth sx={{marginTop: '2vh'}}>
+                        <LoadingButton loading={newDiaryLoading} type="submit" variant="contained" fullWidth
+                                       sx={{marginTop: '2vh'}}>
                             {modifyDiary ? `Modify Diary`
                                 : `Create New Diary`
                             }
                         </LoadingButton>
                         {
                             modifyDiary &&
-                            <Button variant="contained" fullWidth sx={{marginTop:'2vh'}} onClick={handleDisableModify}>
+                            <Button variant="contained" fullWidth sx={{marginTop: '2vh'}} onClick={handleDisableModify}>
                                 Back
                             </Button>
                         }
@@ -543,7 +581,7 @@ const Dashboard = ({session}) => {
                     </form>
                 </Paper>
             </Grid>
-            <Grid item xs={12} order={{xs:3}}>
+            <Grid item xs={12} order={{xs: 3}}>
                 <Paper elevation={3} sx={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -586,38 +624,38 @@ const Dashboard = ({session}) => {
                             {toggleAnalysis ?
                                 analysisLoading ?
                                     <>
-                                    <Grid item xs={12}>
-                                        <LinearProgress color="primary"/>
-                                    </Grid>
-                                    <Grid item container xs={6} spacing={1}>
                                         <Grid item xs={12}>
-                                            <Skeleton animation="wave" variant="rectangular" height={400}/>
+                                            <LinearProgress color="primary"/>
                                         </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
+                                        <Grid item container xs={6} spacing={1}>
+                                            <Grid item xs={12}>
+                                                <Skeleton animation="wave" variant="rectangular" height={400}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
+                                            <Grid item xs={4}>
+                                                <Skeleton animation="wave" height={30}/>
+                                            </Grid>
                                         </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                        <Grid item xs={4}>
-                                            <Skeleton animation="wave" height={30}/>
-                                        </Grid>
-                                    </Grid>
                                         <Grid item container xs={6} alignContent="flex-start">
                                             <Grid item xs={12}>
                                                 <Skeleton animation="wave" height={70}/>
@@ -633,318 +671,367 @@ const Dashboard = ({session}) => {
                                             </Grid>
                                         </Grid>
                                     </>
-                                :
+                                    :
                                     <>
-                                    <Grid item container xs={12} md={6}>
-                                        <Grid item xs={12}>
-                                            <ResponsiveContainer width="100%" height={400}>
-                                                <ComposedChart
-                                                    data={chartData}
-                                                    margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
-                                                >
-                                                    <CartesianGrid stroke="#f5f5f5" />
-                                                    <XAxis dataKey="name" scale="band"/>
-                                                    <YAxis label={{value:showMedication ? 'Pain Level' : 'Scale',angle:-90,position:'insideCenter',offset:20}}/>
-                                                    <ChartTooltip/>
-                                                    <Legend/>
-                                                    {showActivity &&
-                                                        <Bar dataKey="activity" barSize={20} fill={theme.palette.primary.dark}/>
-                                                    }
-                                                    {showMood &&
-                                                        <Bar dataKey="mood" barSize={20} fill="#BFA616"/>
-                                                    }
-                                                    {showPainLevel &&
-                                                        <Line type="monotone" dataKey="painLevel" stroke={theme.palette.primary.main}/>
-                                                    }
-                                                    {showMedication &&
-                                                        uniqueMedications.map((data,index) => {
-                                                            return (
-                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
-                                                            )
-                                                        })
-                                                    }
-                                                    {showDiet &&
-                                                        uniqueDiet.map((data,index) => {
-                                                            return (
-                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
-                                                            )
-                                                        })
-                                                    }
-                                                    {showSymptoms &&
-                                                        uniqueSymptoms.map((data,index) => {
-                                                            return (
-                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
-                                                            )
-                                                        })
-                                                    }
-                                                    {showTriggers &&
-                                                        uniqueTriggers.map((data,index) => {
-                                                            return (
-                                                                <Line key={index} connectNulls type="monotone" dataKey={data} stroke={randomColor({luminosity:'dark'})}/>
-                                                            )
-                                                        })
-                                                    }
-                                                </ComposedChart>
-                                            </ResponsiveContainer>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showActivity} onChange={handleShowActivity}/>} label="Activity"/>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showMood} onChange={handleShowMood}/>} label="Mood"/>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showMedication} onChange={handleShowMedication}/>} label="Medication"/>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showDiet} onChange={handleShowDiet}/>} label="Diet"/>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showSymptoms} onChange={handleShowSymptoms}/>} label="Symptoms"/>
-                                        </Grid>
-                                        <Grid item xs={4} textAlign="center">
-                                            <FormControlLabel control={<Switch checked={showTriggers} onChange={handleShowTriggers}/>} label="Triggers"/>
-                                        </Grid>
-                                    </Grid>
-                                    <Grid item container xs={12} md={6} alignContent="flex-start" spacing={1}>
-                                        {/*Average Pain Level*/}
-                                        <Grid item container xs={12} spacing={1} justifyContent="center">
+                                        <Grid item container xs={12} md={6}>
                                             <Grid item xs={12}>
-                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level</Typography>
+                                                <ResponsiveContainer width="100%" height={400}>
+                                                    <ComposedChart
+                                                        data={chartData}
+                                                        margin={{top: 20, right: 30, left: 0, bottom: 0}}
+                                                    >
+                                                        <CartesianGrid stroke="#f5f5f5"/>
+                                                        <XAxis dataKey="name" scale="band"/>
+                                                        <YAxis label={{
+                                                            value: showMedication ? 'Pain Level' : 'Scale',
+                                                            angle: -90,
+                                                            position: 'insideCenter',
+                                                            offset: 20
+                                                        }}/>
+                                                        <ChartTooltip/>
+                                                        <Legend/>
+                                                        {showActivity &&
+                                                            <Bar dataKey="activity" barSize={20}
+                                                                 fill={theme.palette.primary.dark}/>
+                                                        }
+                                                        {showMood &&
+                                                            <Bar dataKey="mood" barSize={20} fill="#BFA616"/>
+                                                        }
+                                                        {showPainLevel &&
+                                                            <Line type="monotone" dataKey="painLevel"
+                                                                  stroke={theme.palette.primary.main}/>
+                                                        }
+                                                        {showMedication &&
+                                                            uniqueMedications.map((data, index) => {
+                                                                return (
+                                                                    <Line key={index} connectNulls type="monotone"
+                                                                          dataKey={data}
+                                                                          stroke={randomColor({luminosity: 'dark'})}/>
+                                                                )
+                                                            })
+                                                        }
+                                                        {showDiet &&
+                                                            uniqueDiet.map((data, index) => {
+                                                                return (
+                                                                    <Line key={index} connectNulls type="monotone"
+                                                                          dataKey={data}
+                                                                          stroke={randomColor({luminosity: 'dark'})}/>
+                                                                )
+                                                            })
+                                                        }
+                                                        {showSymptoms &&
+                                                            uniqueSymptoms.map((data, index) => {
+                                                                return (
+                                                                    <Line key={index} connectNulls type="monotone"
+                                                                          dataKey={data}
+                                                                          stroke={randomColor({luminosity: 'dark'})}/>
+                                                                )
+                                                            })
+                                                        }
+                                                        {showTriggers &&
+                                                            uniqueTriggers.map((data, index) => {
+                                                                return (
+                                                                    <Line key={index} connectNulls type="monotone"
+                                                                          dataKey={data}
+                                                                          stroke={randomColor({luminosity: 'dark'})}/>
+                                                                )
+                                                            })
+                                                        }
+                                                    </ComposedChart>
+                                                </ResponsiveContainer>
                                             </Grid>
-                                            <Grid item container xs={2}>
-                                                <Grid item container xs={12} sx={{p:1,border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,
-                                                backgroundColor:analysisData.avgPainLevel.lastWeekColor + "20"}}>
-                                                    <Grid item xs={6} display="flex" alignSelf="center" justifyContent="flex-end">
-                                                        <HeartBrokenIcon sx={{color:analysisData.avgPainLevel.lastWeekColor}}/>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel control={<Switch checked={showActivity}
+                                                                                   onChange={handleShowActivity}/>}
+                                                                  label="Activity"/>
+                                            </Grid>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel
+                                                    control={<Switch checked={showMood} onChange={handleShowMood}/>}
+                                                    label="Mood"/>
+                                            </Grid>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel control={<Switch checked={showMedication}
+                                                                                   onChange={handleShowMedication}/>}
+                                                                  label="Medication"/>
+                                            </Grid>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel
+                                                    control={<Switch checked={showDiet} onChange={handleShowDiet}/>}
+                                                    label="Diet"/>
+                                            </Grid>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel control={<Switch checked={showSymptoms}
+                                                                                   onChange={handleShowSymptoms}/>}
+                                                                  label="Symptoms"/>
+                                            </Grid>
+                                            <Grid item xs={4} textAlign="center">
+                                                <FormControlLabel control={<Switch checked={showTriggers}
+                                                                                   onChange={handleShowTriggers}/>}
+                                                                  label="Triggers"/>
+                                            </Grid>
+                                        </Grid>
+                                        <Grid item container xs={12} md={6} alignContent="flex-start" spacing={1}>
+                                            {/*Average Pain Level*/}
+                                            <Grid item container xs={12} spacing={1} justifyContent="center">
+                                                <Grid item xs={12}>
+                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Average
+                                                        Pain Level</Typography>
+                                                </Grid>
+                                                <Grid item container xs={2}>
+                                                    <Grid item container xs={12} sx={{
+                                                        p: 1,
+                                                        border: '1px solid rgba(189, 195, 199,1)',
+                                                        borderRadius: 2,
+                                                        backgroundColor: analysisData.avgPainLevel.lastWeekColor + "20"
+                                                    }}>
+                                                        <Grid item xs={6} display="flex" alignSelf="center"
+                                                              justifyContent="flex-end">
+                                                            <HeartBrokenIcon
+                                                                sx={{color: analysisData.avgPainLevel.lastWeekColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs={6}>
+                                                            <Typography
+                                                                variant="h6">{analysisData.avgPainLevel.lastWeek}</Typography>
+                                                        </Grid>
                                                     </Grid>
-                                                    <Grid item xs={6}>
-                                                        <Typography variant="h6">{analysisData.avgPainLevel.lastWeek}</Typography>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">Last Week</Typography>
                                                     </Grid>
                                                 </Grid>
-                                                <Grid item xs={12} textAlign="center">
-                                                    <Typography variant="caption">Last Week</Typography>
+                                                <Grid item xs={1} textAlign="center" sx={{mt: 1.2}}>
+                                                    <Typography variant="subtitle1"
+                                                                color={analysisData.avgPainLevel.thisWeekColor}>{`${analysisData.avgPainLevel.percentage}%`}</Typography>
+                                                </Grid>
+                                                <Grid item container xs={2}>
+                                                    <Grid item container xs={12} sx={{
+                                                        p: 1,
+                                                        border: '1px solid rgba(189, 195, 199,1)',
+                                                        borderRadius: 2,
+                                                        backgroundColor: analysisData.avgPainLevel.thisWeekColor + "20"
+                                                    }}>
+                                                        <Grid item xs={6} display="flex" alignSelf="center"
+                                                              justifyContent="flex-end">
+                                                            <HeartBrokenIcon
+                                                                sx={{color: analysisData.avgPainLevel.thisWeekColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs={6}>
+                                                            <Typography
+                                                                variant="h6">{analysisData.avgPainLevel.thisWeek}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">This Week</Typography>
+                                                    </Grid>
                                                 </Grid>
                                             </Grid>
-                                            <Grid item xs={1} textAlign="center" sx={{mt:1.2}}>
-                                                <Typography variant="subtitle1" color={analysisData.avgPainLevel.thisWeekColor}>{`${analysisData.avgPainLevel.percentage}%`}</Typography>
-                                            </Grid>
-                                            <Grid item container xs={2}>
-                                                <Grid item container xs={12} sx={{p:1,border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,
-                                                backgroundColor:analysisData.avgPainLevel.thisWeekColor + "20"}}>
-                                                    <Grid item xs={6} display="flex" alignSelf="center" justifyContent="flex-end">
-                                                        <HeartBrokenIcon sx={{color:analysisData.avgPainLevel.thisWeekColor}}/>
+                                            {/*Average Pain Level per Time Period*/}
+                                            <Grid item container xs={12} justifyContent="center">
+                                                <Grid item xs={12}>
+                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Average
+                                                        Pain Level per Time Period</Typography>
+                                                </Grid>
+                                                <Grid item container xs={8} sx={{
+                                                    border: '1px solid rgba(189, 195, 199,1)',
+                                                    borderRadius: 2,
+                                                    mt: 1
+                                                }}>
+                                                    <Grid item container xs={3} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor + "20"
+                                                    }}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`← 6am`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAm}</Typography>
+                                                            </Grid>
+                                                        </Grid>
                                                     </Grid>
-                                                    <Grid item xs={6}>
-                                                        <Typography variant="h6">{analysisData.avgPainLevel.thisWeek}</Typography>
+                                                    <Grid item container xs={3} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor + "20"
+                                                    }}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`6am-12pm`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePm}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={3} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor + "20"
+                                                    }}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`12pm-6pm`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPm}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={3}
+                                                          sx={{backgroundColor: analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor + "20"}}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`6pm →`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAm}</Typography>
+                                                            </Grid>
+                                                        </Grid>
                                                     </Grid>
                                                 </Grid>
-                                                <Grid item xs={12} textAlign="center">
-                                                    <Typography variant="caption">This Week</Typography>
+                                            </Grid>
+                                            {/*Average Pain Level by Sleep*/}
+                                            <Grid item container xs={12} justifyContent="center">
+                                                <Grid item xs={12}>
+                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Average
+                                                        Pain Level by Sleep</Typography>
+                                                </Grid>
+                                                <Grid item container xs={6} sx={{
+                                                    border: '1px solid rgba(189, 195, 199,1)',
+                                                    borderRadius: 2,
+                                                    mt: 1
+                                                }}>
+                                                    <Grid item container xs={4} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelBySleep.averageLessThanSixColor + "20"
+                                                    }}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`< 6hrs`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelBySleep.averageLessThanSixColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelBySleep.averageLessThanSix}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={4} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelBySleep.averageSixToEightColor + "20"
+                                                    }}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`6-8hrs`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelBySleep.averageSixToEightColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelBySleep.averageSixToEight}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={4}
+                                                          sx={{backgroundColor: analysisData.avgPainLevelBySleep.averageMoreThanEightColor + "20"}}>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography variant="caption">{`> 8hrs`}</Typography>
+                                                        </Grid>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelBySleep.averageMoreThanEightColor}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelBySleep.averageMoreThanEight}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                            {/*Most Painful Areas*/}
+                                            <Grid item container xs={12} justifyContent="center">
+                                                <Grid item xs={12}>
+                                                    <Typography variant="h6" fontWeight="bold" textAlign="center">Most
+                                                        Painful Areas</Typography>
+                                                </Grid>
+                                                <Grid item container xs={8} sx={{
+                                                    border: '1px solid rgba(189, 195, 199,1)',
+                                                    borderRadius: 2,
+                                                    mt: 1,
+                                                }}>
+                                                    <Grid item container xs={4} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelByArea.area1.color + "20"
+                                                    }}>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByArea.area1.color}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByArea.area1.average}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography
+                                                                variant="body2">{analysisData.avgPainLevelByArea.area1.name}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={4} sx={{
+                                                        borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                        backgroundColor: analysisData.avgPainLevelByArea.area2.color + "20"
+                                                    }}>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByArea.area2.color}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByArea.area2.average}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography
+                                                                variant="body2">{analysisData.avgPainLevelByArea.area2.name}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item container xs={4}
+                                                          sx={{backgroundColor: analysisData.avgPainLevelByArea.area3.color + "20"}}>
+                                                        <Grid item container xs={12} justifyContent="center">
+                                                            <Grid item xs="auto">
+                                                                <HeartBrokenIcon
+                                                                    sx={{color: analysisData.avgPainLevelByArea.area3.color}}/>
+                                                            </Grid>
+                                                            <Grid item xs="auto">
+                                                                <Typography>{analysisData.avgPainLevelByArea.area3.average}</Typography>
+                                                            </Grid>
+                                                        </Grid>
+                                                        <Grid item xs={12} textAlign="center">
+                                                            <Typography
+                                                                variant="body2">{analysisData.avgPainLevelByArea.area3.name}</Typography>
+                                                        </Grid>
+                                                    </Grid>
                                                 </Grid>
                                             </Grid>
                                         </Grid>
-                                        {/*Average Pain Level per Time Period*/}
-                                        <Grid item container xs={12} justifyContent="center">
-                                            <Grid item xs={12}>
-                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level per Time Period</Typography>
-                                            </Grid>
-                                            <Grid item container xs={8} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1}}>
-                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`← 6am`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAm}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`6am-12pm`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePm}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`12pm-6pm`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPm}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={3} sx={{backgroundColor:analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`6pm →`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAm}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                            </Grid>
-                                        </Grid>
-                                        {/*Average Pain Level by Sleep*/}
-                                        <Grid item container xs={12} justifyContent="center">
-                                            <Grid item xs={12}>
-                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level by Sleep</Typography>
-                                            </Grid>
-                                            <Grid item container xs={6} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1}}>
-                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelBySleep.averageLessThanSixColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`< 6hrs`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageLessThanSixColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelBySleep.averageLessThanSix}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelBySleep.averageSixToEightColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`6-8hrs`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageSixToEightColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelBySleep.averageSixToEight}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={4} sx={{backgroundColor:analysisData.avgPainLevelBySleep.averageMoreThanEightColor + "20"}}>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="caption">{`> 8hrs`}</Typography>
-                                                    </Grid>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageMoreThanEightColor}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelBySleep.averageMoreThanEight}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                </Grid>
-                                            </Grid>
-                                        </Grid>
-                                        {/*Most Painful Areas*/}
-                                        <Grid item container xs={12} justifyContent="center">
-                                            <Grid item xs={12}>
-                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Most Painful Areas</Typography>
-                                            </Grid>
-                                            <Grid item container xs={8} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1,}}>
-                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                    backgroundColor:analysisData.avgPainLevelByArea.area1.color + "20"}}>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area1.color}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByArea.area1.average}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area1.name}</Typography>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
-                                                backgroundColor:analysisData.avgPainLevelByArea.area2.color + "20"}}>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area2.color}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByArea.area2.average}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area2.name}</Typography>
-                                                    </Grid>
-                                                </Grid>
-                                                <Grid item container xs={4} sx={{backgroundColor:analysisData.avgPainLevelByArea.area3.color + "20"}}>
-                                                    <Grid item container xs={12} justifyContent="center">
-                                                        <Grid item xs="auto">
-                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area3.color}}/>
-                                                        </Grid>
-                                                        <Grid item xs="auto">
-                                                            <Typography>{analysisData.avgPainLevelByArea.area3.average}</Typography>
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid item xs={12} textAlign="center">
-                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area3.name}</Typography>
-                                                    </Grid>
-                                                </Grid>
-                                            </Grid>
-                                                {/*    <Grid item container xs={2} textAlign="center" sx={{borderRight: '1px solid rgba(189, 195, 199,1)'}}>*/}
-                                                {/*        <Grid item container xs={12}>*/}
-                                                {/*            <Grid item xs={7} textAlign="end">*/}
-                                                {/*                <HeartBrokenIcon color="primary"/>*/}
-                                                {/*            </Grid>*/}
-                                                {/*            <Grid item xs={5} textAlign="start">*/}
-                                                {/*                <Typography>4</Typography>*/}
-                                                {/*            </Grid>*/}
-                                                {/*        </Grid>*/}
-                                                {/*        <Grid item xs={12}>*/}
-                                                {/*            <Typography>Right Head</Typography>*/}
-                                                {/*        </Grid>*/}
-                                                {/*    </Grid>*/}
-                                                {/*    <Grid item container xs={2} textAlign="center" sx={{borderRight: '1px solid rgba(189, 195, 199,1)'}}>*/}
-                                                {/*        <Grid item container xs={12}>*/}
-                                                {/*            <Grid item xs={7} textAlign="end">*/}
-                                                {/*                <HeartBrokenIcon color="primary"/>*/}
-                                                {/*            </Grid>*/}
-                                                {/*            <Grid item xs={5} textAlign="start">*/}
-                                                {/*                <Typography>4</Typography>*/}
-                                                {/*            </Grid>*/}
-                                                {/*        </Grid>*/}
-                                                {/*        <Grid item xs={12}>*/}
-                                                {/*            <Typography>Left Head</Typography>*/}
-                                                {/*        </Grid>*/}
-                                                {/*    </Grid>*/}
-                                                {/*    <Grid item container xs={2} textAlign="center">*/}
-                                                {/*        <Grid item container xs={12}>*/}
-                                                {/*            <Grid item xs={7} textAlign="end">*/}
-                                                {/*                <HeartBrokenIcon color="primary"/>*/}
-                                                {/*            </Grid>*/}
-                                                {/*            <Grid item xs={5} textAlign="start">*/}
-                                                {/*                <Typography>4</Typography>*/}
-                                                {/*            </Grid>*/}
-                                                {/*        </Grid>*/}
-                                                {/*        <Grid item xs={12}>*/}
-                                                {/*            <Typography>Back</Typography>*/}
-                                                {/*        </Grid>*/}
-                                                {/*    </Grid>*/}
-                                        </Grid>
-                                    </Grid>
                                     </>
                                 :
                                 <></>
@@ -959,6 +1046,11 @@ const Dashboard = ({session}) => {
 
 export default Dashboard;
 
+/**
+ * Helper method to get contrasting color
+ * @param hex
+ * @returns {string}
+ */
 const getContrast = (hex) => {
     if (hex.slice(0, 1) === '#') {
         hex = hex.slice(1);

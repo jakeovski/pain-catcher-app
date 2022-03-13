@@ -3,25 +3,25 @@ import Connection from "../../../config/dbConnection";
 import Diary from "../../../models/Diary";
 
 
-const getDiaries = async(req,res) => {
+const getDiaries = async (req, res) => {
     const session = await getSession(res);
 
-    try{
+    try {
         await Connection();
 
-        const diaryData = await Diary.find({userId:session.user.id});
+        const diaryData = await Diary.find({userId: session.user.id});
         return res.status(200).json({
-            data:diaryData,
-            type:'',
-            message:'Success'
+            data: diaryData,
+            type: '',
+            message: 'Success'
         })
 
-    }catch (error){
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
-            data:undefined,
-            type:'error',
-            message:'Error while retrieving diaries'
+            data: undefined,
+            type: 'error',
+            message: 'Error while retrieving diaries'
         })
     }
 }

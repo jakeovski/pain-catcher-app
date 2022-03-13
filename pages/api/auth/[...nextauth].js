@@ -6,10 +6,10 @@ import {compare} from "bcrypt";
 
 export default NextAuth({
     //Configure JWT
-    session:{
-        strategy:'jwt',
+    session: {
+        strategy: 'jwt',
     },
-    secret:process.env.SECRET,
+    secret: process.env.SECRET,
     //Providers
     providers: [
         Credentials({
@@ -18,7 +18,7 @@ export default NextAuth({
                 await Connection();
                 //Get the user
                 const user = await User.findOne({
-                    email:credentials.email,
+                    email: credentials.email,
                 });
                 //Not found - send error response
                 if (!user) {
@@ -32,20 +32,20 @@ export default NextAuth({
                 }
                 //Else - success response
                 return {
-                    id:user._id,
-                    email:user.email,
-                    firstName:user.firstName,
-                    lastName:user.lastName
+                    id: user._id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName
                 };
             }
         })
     ],
-    callbacks:{
+    callbacks: {
         jwt: async ({token, user}) => {
             user && (token.user = user);
             return token;
         },
-        session:async ({session,token}) => {
+        session: async ({session, token}) => {
             session.user = token.user;
             return session;
         }

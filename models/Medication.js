@@ -2,18 +2,18 @@ import mongoose from "mongoose";
 
 
 const medication = mongoose.Schema({
-    id:{
-        type:String,
+    id: {
+        type: String,
     },
-    userId:{
-        type:String,
-        required:true
+    userId: {
+        type: String,
+        required: true
     },
-    medicationName:{
-        type:String,
-        required:true,
-        unique:true
+    medicationName: {
+        type: String,
+        required: true,
+        unique: true
     }
 });
 
-export default mongoose.models.medication || mongoose.model("medication",medication);
+export default mongoose.models.medication || mongoose.model("medication", medication);

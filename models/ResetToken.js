@@ -5,18 +5,18 @@ import mongoose from "mongoose";
  * @type {*}
  */
 const resetTokens = mongoose.Schema({
-    userId:{
-        type:String,
-        required:true
+    userId: {
+        type: String,
+        required: true
     },
-    tokenHash:{
-        type:String,
-        required:true
+    tokenHash: {
+        type: String,
+        required: true
     },
-    expirationDate:{
-        type:Date,
-        required:true
+    expirationDate: {
+        type: Date,
+        required: true
     },
 });
 
-export default mongoose.models.resetTokens || mongoose.model("resetTokens",resetTokens);
+export default mongoose.models.resetTokens || mongoose.model("resetTokens", resetTokens);

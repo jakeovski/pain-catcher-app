@@ -8,147 +8,147 @@ import Symptoms from "../../../models/Symptoms";
 import Triggers from "../../../models/Triggers";
 
 
-const getRecord = async(req,res) => {
+const getRecord = async (req, res) => {
     if (req.method !== 'POST') {
         return req.status(401).json({
-            data:undefined,
-            type:'error',
-            message:'Only GET method is allowed'
+            data: undefined,
+            type: 'error',
+            message: 'Only GET method is allowed'
         });
     }
-    try{
-        const {userId,diaryId,recordId} = req.body;
+    try {
+        const {userId, diaryId, recordId} = req.body;
         const session = await getSession(res);
 
         if (userId !== session.user.id) {
             return res.status(401).json({
-                data:undefined,
-                type:'error',
-                message:'Unauthorized'
+                data: undefined,
+                type: 'error',
+                message: 'Unauthorized'
             });
         }
 
         await Connection();
 
         const diary = await Diary.findOne({
-            userId:userId,
-            _id:diaryId
+            userId: userId,
+            _id: diaryId
         });
 
         if (diary.length === 0) {
             return res.status(401).json({
-                data:undefined,
-                type:'error',
-                message:'Diary does not exist'
+                data: undefined,
+                type: 'error',
+                message: 'Diary does not exist'
             });
         }
-            const diet = await Diet.find({
-                userId:userId
-            });
+        const diet = await Diet.find({
+            userId: userId
+        });
 
-            const medication = await Medication.find({
-                userId:userId
-            });
-            const symptoms = await Symptoms.find({
-                userId:userId
-            });
-            const triggers = await Triggers.find({
-                userId:userId
-            })
+        const medication = await Medication.find({
+            userId: userId
+        });
+        const symptoms = await Symptoms.find({
+            userId: userId
+        });
+        const triggers = await Triggers.find({
+            userId: userId
+        })
 
         if (recordId === 'new') {
             return res.status(200).json({
-                data:{
+                data: {
                     diaryId: diary._id,
                     record: {
-                        painLevel:0,
-                        title:'',
-                        areas:[],
-                        triggers:[],
-                        symptoms:[],
-                        activityLevel:0,
-                        medications:[],
-                        mood:0,
-                        sleep:{
-                            hours:'',
-                            minutes:''
+                        painLevel: 0,
+                        title: '',
+                        areas: [],
+                        triggers: [],
+                        symptoms: [],
+                        activityLevel: 0,
+                        medications: [],
+                        mood: 0,
+                        sleep: {
+                            hours: '',
+                            minutes: ''
                         },
-                        diet:[],
-                        hormoneDetails:{
-                            gender:'',
-                            PSA:'',
-                            oestradiol:'',
-                            progesterone:'',
-                            DHEA:'',
-                            testosterone:{
-                                value:'',
-                                measure:'free'
+                        diet: [],
+                        hormoneDetails: {
+                            gender: '',
+                            PSA: '',
+                            oestradiol: '',
+                            progesterone: '',
+                            DHEA: '',
+                            testosterone: {
+                                value: '',
+                                measure: 'free'
                             },
-                            FBC:{
-                                MCV:'',
-                                MCH:'',
-                                MCHC:'',
-                                RDW:''
+                            FBC: {
+                                MCV: '',
+                                MCH: '',
+                                MCHC: '',
+                                RDW: ''
                             },
-                            vitaminD:'',
-                            SHBG:'',
-                            FSH:'',
-                            populated:false
+                            vitaminD: '',
+                            SHBG: '',
+                            FSH: '',
+                            populated: false
                         },
-                        description:'',
-                        frontBodyImage:'',
-                        backBodyImage:'',
-                        recordStartDate:'',
-                        recordEndDate:''
+                        description: '',
+                        frontBodyImage: '',
+                        backBodyImage: '',
+                        recordStartDate: '',
+                        recordEndDate: ''
                     },
-                    options:{
-                        diet:diet,
-                        medication:medication,
-                        symptoms:symptoms,
-                        triggers:triggers
+                    options: {
+                        diet: diet,
+                        medication: medication,
+                        symptoms: symptoms,
+                        triggers: triggers
                     }
                 },
-                type:'',
-                message:'Success'
+                type: '',
+                message: 'Success'
             });
-        }else {
+        } else {
             const record = await Record.findOne({
-                _id:recordId,
+                _id: recordId,
             })
 
-            if(!record){
+            if (!record) {
                 return res.status(404).json({
-                    data:{
-                        diaryId:diary._id,
-                        record:null
+                    data: {
+                        diaryId: diary._id,
+                        record: null
                     },
-                    type:'error',
-                    message:'Record does not exist'
+                    type: 'error',
+                    message: 'Record does not exist'
                 })
-            }else {
+            } else {
                 return res.status(200).json({
-                    data:{
-                        diaryId:diaryId,
-                        record:record,
-                        options:{
-                            diet:diet,
-                            medication:medication,
-                            symptoms:symptoms,
-                            triggers:triggers
+                    data: {
+                        diaryId: diaryId,
+                        record: record,
+                        options: {
+                            diet: diet,
+                            medication: medication,
+                            symptoms: symptoms,
+                            triggers: triggers
                         }
                     },
-                    type:'',
-                    message:'Success'
+                    type: '',
+                    message: 'Success'
                 })
             }
 
         }
-    }catch (error){
+    } catch (error) {
         console.log(error);
         return res.status(500).json({
-            data:undefined,
-            type:'error',
-            message:'Error while retrieving record'
+            data: undefined,
+            type: 'error',
+            message: 'Error while retrieving record'
         })
     }
 }

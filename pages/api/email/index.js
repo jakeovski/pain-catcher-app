@@ -12,40 +12,40 @@ import {DateTime} from "luxon";
  * @param res
  * @returns {Promise<*>}
  */
-const sendMail = async (req,res) => {
+const sendMail = async (req, res) => {
     //Check if the user exists
     await Connection();
     const user = await User.findOne({
-        email:req.body.email
+        email: req.body.email
     });
 
     //If no user, return an error
     if (!user) {
         return res.status(404).json({
-            code:404,
-            type:'error',
-            message:'User does not exist'
+            code: 404,
+            type: 'error',
+            message: 'User does not exist'
         });
     }
 
     //Check if the reset token already exists
     const duplicateReset = await ResetToken.findOne({
-        userId:user._id
+        userId: user._id
     });
 
     //If duplicate found, delete it
     if (duplicateReset) {
         await ResetToken.deleteOne({
-            userId:user._id
+            userId: user._id
         })
     }
 
     //Generate new token and add the data to the db table
     const token = createToken();
     await ResetToken.create({
-        userId:user._id,
-        tokenHash: await hash(token,12),
-        expirationDate: DateTime.now().plus({minutes:15}),
+        userId: user._id,
+        tokenHash: await hash(token, 12),
+        expirationDate: DateTime.now().plus({minutes: 15}),
     });
 
     //Generate the reset password link
@@ -53,18 +53,18 @@ const sendMail = async (req,res) => {
 
     //Prepare the mail client
     let transporter = nodemailer.createTransport({
-        service:"Mailjet",
-        auth:{
+        service: "Mailjet",
+        auth: {
             user: process.env.EMAIL_USERNAME,
-            pass:process.env.EMAIL_PASSWORD
+            pass: process.env.EMAIL_PASSWORD
         }
     })
 
     let mailOptions = {
-        from:'no-reply@paincatcher.app',
+        from: 'no-reply@paincatcher.app',
         to: user.email,
-        subject:'Password Reset',
-        html:`  <h3>Password Reset</h3>
+        subject: 'Password Reset',
+        html: `  <h3>Password Reset</h3>
                 <p>Please use the following link to reset your password: <a href=${generatedLink}>${generatedLink}</a></p>
                 <p><i>(The link will expire in 15 minutes)</i></p>`
     };

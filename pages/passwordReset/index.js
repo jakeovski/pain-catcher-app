@@ -13,15 +13,15 @@ import check from "../api/email/check";
 const PasswordReset = ({data}) => {
     const router = useRouter();
     console.log(data);
-    const [formData,setFormData] = useState({
-        password:'',
-        confirmPassword:'',
+    const [formData, setFormData] = useState({
+        password: '',
+        confirmPassword: '',
     });
     const [showPassword, setShowPassword] = useState(false);
-    const [loading,setLoading] = useState(false);
-    const [message,setMessage] = useState({
-        type:'',
-        message:''
+    const [loading, setLoading] = useState(false);
+    const [message, setMessage] = useState({
+        type: '',
+        message: ''
     })
 
     /**
@@ -37,7 +37,7 @@ const PasswordReset = ({data}) => {
      */
     const handleChange = (e) => {
         setFormData({
-            ...formData,[e.target.name]:e.target.value
+            ...formData, [e.target.name]: e.target.value
         });
     }
 
@@ -58,7 +58,7 @@ const PasswordReset = ({data}) => {
                 },
                 body: JSON.stringify({
                     id: data.id,
-                    password:formData.password
+                    password: formData.password
                 })
             });
 
@@ -68,7 +68,7 @@ const PasswordReset = ({data}) => {
             setLoading(false);
             setMessage(message);
 
-            if(message.type === 'success'){
+            if (message.type === 'success') {
                 //Redirect to log in screen
                 await router.push('/');
             }
@@ -81,47 +81,47 @@ const PasswordReset = ({data}) => {
      */
     const validate = () => {
         let correct = true;
-        if(formData.password !== formData.confirmPassword){
+        if (formData.password !== formData.confirmPassword) {
             setMessage({
-                type:'error',
-                message:'Passwords are not equal'
+                type: 'error',
+                message: 'Passwords are not equal'
             })
             correct = false;
         }
         if (formData.password && formData.password.length < 8) {
             setMessage({
-                type:'error',
-                message:'Password must be at least 8 characters'
+                type: 'error',
+                message: 'Password must be at least 8 characters'
             })
             correct = false;
         }
         return correct;
     }
 
-    return(
+    return (
         <Container component="main" maxWidth="xs"
                    sx={{
-                       height:'90vh',
-                       display:'flex',
-                       flexDirection:'column',
-                       justifyContent:'center',
-                       textAlign:'center'
+                       height: '90vh',
+                       display: 'flex',
+                       flexDirection: 'column',
+                       justifyContent: 'center',
+                       textAlign: 'center'
                    }}>
-            <Paper  elevation={3}
-                    sx={{
-                        display:'flex',
-                        flexDirection:'column',
-                        alignItems:'center',
-                        padding:(theme) => theme.spacing(2)
-                    }}>
-                { data.error ?
-                <Typography variant="h6">{data.message}</Typography>
-                :
+            <Paper elevation={3}
+                   sx={{
+                       display: 'flex',
+                       flexDirection: 'column',
+                       alignItems: 'center',
+                       padding: (theme) => theme.spacing(2)
+                   }}>
+                {data.error ?
+                    <Typography variant="h6">{data.message}</Typography>
+                    :
                     <form onSubmit={handleSubmit}>
                         {message.type &&
-                        <Alert severity={message.type}>{message.message}</Alert>
+                            <Alert severity={message.type}>{message.message}</Alert>
                         }
-                        <Typography variant="h5" sx={{marginBottom:'2vh'}}>
+                        <Typography variant="h5" sx={{marginBottom: '2vh'}}>
                             Enter new Password
                         </Typography>
                         <Grid container spacing={2}>
@@ -148,7 +148,7 @@ const PasswordReset = ({data}) => {
                             variant="contained"
                             color="primary"
                             sx={{
-                                margin:(theme) => theme.spacing(2,0,2)
+                                margin: (theme) => theme.spacing(2, 0, 2)
                             }}
                         >Reset Password</Button>
                         {loading && <LinearProgress/>}
@@ -167,9 +167,9 @@ const PasswordReset = ({data}) => {
 export async function getServerSideProps({query}) {
     const {user, token} = query;
 
-    const data = await check(user,token);
+    const data = await check(user, token);
     return {
-        props:{
+        props: {
             data
         }
     }
