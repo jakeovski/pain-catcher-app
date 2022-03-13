@@ -376,7 +376,7 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container xs={12} sm={12} md={6} lg={6}  columnSpacing={1}>
                                 <Grid item xs="auto" sm="auto" md="auto" lg="auto">
-                                    <Typography variant="body1">Pain Level*:</Typography>
+                                    <Typography variant="body1">Pain Level:</Typography>
                                 </Grid>
                                 <Grid item container xs={9} sm={10} md={9} lg={9} columnSpacing={1}>
                                     <Grid item xs="auto" sm="auto" md="auto" lg="auto">
@@ -793,7 +793,7 @@ const RecordView = ({recordId,pid,session}) => {
                             </Grid>
                             <Grid item container justifyContent="space-between" xs={12}>
                                 <Grid item xs={4} md={3}>
-                                    <LoadingButton fullWidth variant="contained" disabled={recordData.painLevel === 0 || !recordData.title} loading={buttonLoading} onClick={handleRecordSubmit}>
+                                    <LoadingButton fullWidth variant="contained" disabled={!recordData.title} loading={buttonLoading} onClick={handleRecordSubmit}>
                                         {recordData._id ? 'Confirm' : 'Add Record'}
                                     </LoadingButton>
                                 </Grid>

@@ -6,6 +6,7 @@ import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import {LoadingButton} from "@mui/lab";
+import FavoriteIcon from '@mui/icons-material/Favorite';
 
 
 const RecordPreview = ({recordPreview,setRecordPreview,handleRecordNavigation,buttonLoading,handleDeleteDialogOpen}) => {
@@ -15,6 +16,9 @@ const RecordPreview = ({recordPreview,setRecordPreview,handleRecordNavigation,bu
         let content=[];
         for(let i = 0; i < recordPreview.painLevel; i++) {
             content.push(<HeartBrokenIcon color="primary" key={i}/>);
+        }
+        if(recordPreview.painLevel === 0) {
+            content.push(<FavoriteIcon color="secondary"/>)
         }
         return content;
     }

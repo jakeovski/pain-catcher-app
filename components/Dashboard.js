@@ -20,6 +20,7 @@ import CustomDialog from "../helper/CustomDialog";
 import {useRouter} from "next/router";
 import {LoadingButton} from "@mui/lab";
 import randomColor from 'randomcolor';
+import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
 import {
     CartesianGrid,
     ComposedChart,
@@ -69,6 +70,7 @@ const Dashboard = ({session}) => {
     const [uniqueDiet,setUniqueDiet] = useState([]);
     const [uniqueSymptoms,setUniqueSymptoms] = useState([]);
     const [uniqueTriggers,setUniqueTriggers] = useState([]);
+    const [analysisData,setAnalysisData] = useState({});
 
 
     const [newDiary, setNewDiary] = useState({
@@ -228,14 +230,14 @@ const Dashboard = ({session}) => {
             },
             body: JSON.stringify({
                 userId:session.user.id,
-                diaryId:diaryId
+                diaryId:diaryId,
+                analysis:true,
             })
         });
 
         const data = await res.json();
         console.log(data);
         setRecordsForAnalysis(data.data.records);
-        setAnalysisLoading(false);
         const chartDataTemp = [];
         let uniqueMedications =[];
         let uniqueDiet =[];
@@ -278,8 +280,9 @@ const Dashboard = ({session}) => {
         setUniqueSymptoms(uniqueSymptoms);
         setUniqueMedications(uniqueMedications);
         setUniqueDiet(uniqueDiet);
-        console.log(chartDataTemp);
         setChartData(chartDataTemp);
+        setAnalysisData(data.data.analysis);
+        setAnalysisLoading(false);
     }
 
     const handleShowActivity = (event) => {
@@ -631,9 +634,9 @@ const Dashboard = ({session}) => {
                                         </Grid>
                                     </>
                                 :
+                                    <>
                                     <Grid item container xs={12} md={6}>
                                         <Grid item xs={12}>
-                                            {/*<Typography>Analysis here:</Typography>*/}
                                             <ResponsiveContainer width="100%" height={400}>
                                                 <ComposedChart
                                                     data={chartData}
@@ -703,6 +706,246 @@ const Dashboard = ({session}) => {
                                             <FormControlLabel control={<Switch checked={showTriggers} onChange={handleShowTriggers}/>} label="Triggers"/>
                                         </Grid>
                                     </Grid>
+                                    <Grid item container xs={12} md={6} alignContent="flex-start" spacing={1}>
+                                        {/*Average Pain Level*/}
+                                        <Grid item container xs={12} spacing={1} justifyContent="center">
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level</Typography>
+                                            </Grid>
+                                            <Grid item container xs={2}>
+                                                <Grid item container xs={12} sx={{p:1,border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,
+                                                backgroundColor:analysisData.avgPainLevel.lastWeekColor + "20"}}>
+                                                    <Grid item xs={6} display="flex" alignSelf="center" justifyContent="flex-end">
+                                                        <HeartBrokenIcon sx={{color:analysisData.avgPainLevel.lastWeekColor}}/>
+                                                    </Grid>
+                                                    <Grid item xs={6}>
+                                                        <Typography variant="h6">{analysisData.avgPainLevel.lastWeek}</Typography>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item xs={12} textAlign="center">
+                                                    <Typography variant="caption">Last Week</Typography>
+                                                </Grid>
+                                            </Grid>
+                                            <Grid item xs={1} textAlign="center" sx={{mt:1.2}}>
+                                                <Typography variant="subtitle1" color={analysisData.avgPainLevel.thisWeekColor}>{`${analysisData.avgPainLevel.percentage}%`}</Typography>
+                                            </Grid>
+                                            <Grid item container xs={2}>
+                                                <Grid item container xs={12} sx={{p:1,border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,
+                                                backgroundColor:analysisData.avgPainLevel.thisWeekColor + "20"}}>
+                                                    <Grid item xs={6} display="flex" alignSelf="center" justifyContent="flex-end">
+                                                        <HeartBrokenIcon sx={{color:analysisData.avgPainLevel.thisWeekColor}}/>
+                                                    </Grid>
+                                                    <Grid item xs={6}>
+                                                        <Typography variant="h6">{analysisData.avgPainLevel.thisWeek}</Typography>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item xs={12} textAlign="center">
+                                                    <Typography variant="caption">This Week</Typography>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                        {/*Average Pain Level per Time Period*/}
+                                        <Grid item container xs={12} justifyContent="center">
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level per Time Period</Typography>
+                                            </Grid>
+                                            <Grid item container xs={8} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1}}>
+                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`← 6am`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAmColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainTwelveAmToSixAm}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`6am-12pm`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePmColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainSixAmToTwelvePm}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={3} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`12pm-6pm`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPmColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainTwelvePmToSixPm}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={3} sx={{backgroundColor:analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`6pm →`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAmColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByTime.averagePainSixPmToTwelveAm}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                        {/*Average Pain Level by Sleep*/}
+                                        <Grid item container xs={12} justifyContent="center">
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Average Pain Level by Sleep</Typography>
+                                            </Grid>
+                                            <Grid item container xs={6} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1}}>
+                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelBySleep.averageLessThanSixColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`< 6hrs`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageLessThanSixColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelBySleep.averageLessThanSix}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelBySleep.averageSixToEightColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`6-8hrs`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageSixToEightColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelBySleep.averageSixToEight}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={4} sx={{backgroundColor:analysisData.avgPainLevelBySleep.averageMoreThanEightColor + "20"}}>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="caption">{`> 8hrs`}</Typography>
+                                                    </Grid>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelBySleep.averageMoreThanEightColor}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelBySleep.averageMoreThanEight}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                        </Grid>
+                                        {/*Most Painful Areas*/}
+                                        <Grid item container xs={12} justifyContent="center">
+                                            <Grid item xs={12}>
+                                                <Typography variant="h6" fontWeight="bold" textAlign="center">Most Painful Areas</Typography>
+                                            </Grid>
+                                            <Grid item container xs={8} sx={{border: '1px solid rgba(189, 195, 199,1)', borderRadius:2,mt:1,}}>
+                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                    backgroundColor:analysisData.avgPainLevelByArea.area1.color + "20"}}>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area1.color}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByArea.area1.average}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area1.name}</Typography>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={4} sx={{borderRight: '1px solid rgba(189, 195, 199,1)',
+                                                backgroundColor:analysisData.avgPainLevelByArea.area2.color + "20"}}>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area2.color}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByArea.area2.average}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area2.name}</Typography>
+                                                    </Grid>
+                                                </Grid>
+                                                <Grid item container xs={4} sx={{backgroundColor:analysisData.avgPainLevelByArea.area3.color + "20"}}>
+                                                    <Grid item container xs={12} justifyContent="center">
+                                                        <Grid item xs="auto">
+                                                            <HeartBrokenIcon sx={{color:analysisData.avgPainLevelByArea.area3.color}}/>
+                                                        </Grid>
+                                                        <Grid item xs="auto">
+                                                            <Typography>{analysisData.avgPainLevelByArea.area3.average}</Typography>
+                                                        </Grid>
+                                                    </Grid>
+                                                    <Grid item xs={12} textAlign="center">
+                                                        <Typography variant="body2">{analysisData.avgPainLevelByArea.area3.name}</Typography>
+                                                    </Grid>
+                                                </Grid>
+                                            </Grid>
+                                                {/*    <Grid item container xs={2} textAlign="center" sx={{borderRight: '1px solid rgba(189, 195, 199,1)'}}>*/}
+                                                {/*        <Grid item container xs={12}>*/}
+                                                {/*            <Grid item xs={7} textAlign="end">*/}
+                                                {/*                <HeartBrokenIcon color="primary"/>*/}
+                                                {/*            </Grid>*/}
+                                                {/*            <Grid item xs={5} textAlign="start">*/}
+                                                {/*                <Typography>4</Typography>*/}
+                                                {/*            </Grid>*/}
+                                                {/*        </Grid>*/}
+                                                {/*        <Grid item xs={12}>*/}
+                                                {/*            <Typography>Right Head</Typography>*/}
+                                                {/*        </Grid>*/}
+                                                {/*    </Grid>*/}
+                                                {/*    <Grid item container xs={2} textAlign="center" sx={{borderRight: '1px solid rgba(189, 195, 199,1)'}}>*/}
+                                                {/*        <Grid item container xs={12}>*/}
+                                                {/*            <Grid item xs={7} textAlign="end">*/}
+                                                {/*                <HeartBrokenIcon color="primary"/>*/}
+                                                {/*            </Grid>*/}
+                                                {/*            <Grid item xs={5} textAlign="start">*/}
+                                                {/*                <Typography>4</Typography>*/}
+                                                {/*            </Grid>*/}
+                                                {/*        </Grid>*/}
+                                                {/*        <Grid item xs={12}>*/}
+                                                {/*            <Typography>Left Head</Typography>*/}
+                                                {/*        </Grid>*/}
+                                                {/*    </Grid>*/}
+                                                {/*    <Grid item container xs={2} textAlign="center">*/}
+                                                {/*        <Grid item container xs={12}>*/}
+                                                {/*            <Grid item xs={7} textAlign="end">*/}
+                                                {/*                <HeartBrokenIcon color="primary"/>*/}
+                                                {/*            </Grid>*/}
+                                                {/*            <Grid item xs={5} textAlign="start">*/}
+                                                {/*                <Typography>4</Typography>*/}
+                                                {/*            </Grid>*/}
+                                                {/*        </Grid>*/}
+                                                {/*        <Grid item xs={12}>*/}
+                                                {/*            <Typography>Back</Typography>*/}
+                                                {/*        </Grid>*/}
+                                                {/*    </Grid>*/}
+                                        </Grid>
+                                    </Grid>
+                                    </>
                                 :
                                 <></>
                             }
