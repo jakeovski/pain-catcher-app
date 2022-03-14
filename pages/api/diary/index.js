@@ -9,7 +9,6 @@ const getDiaries = async (req, res) => {
     try {
         await Connection();
 
-        console.log(session);
         const diaryData = await Diary.find({userId: session.user.id});
         return res.status(200).json({
             data: diaryData,

@@ -30,7 +30,6 @@ export default NextAuth({
                 if (!checkPassword) {
                     throw new Error('Incorrect Password');
                 }
-                console.log(user);
                 //Else - success response
                 return {
                     id: user._id,
