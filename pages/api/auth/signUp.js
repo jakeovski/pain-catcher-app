@@ -29,7 +29,7 @@ const register = async (req, res) => {
 
             console.log(`Successfully created user ${email}`);
             //Send response
-            res.status(201).json({code: '200', type: 'success', message: `Successfully registered`});
+            res.status(201).json({code: '201', type: 'success', message: `Successfully registered`});
         }
     } catch (error) {
         console.log(error);

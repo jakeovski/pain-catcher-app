@@ -1,9 +1,9 @@
 # Pain Catcher Documentation
 ---
 
-Revision | Updated
------| ---------|
-1.0.0 | 14/03/2022
+| Revision | Updated    |
+|----------|------------|
+| 1.0.0    | 14/03/2022 |
 
 ## Table of Contents
 - Framework
@@ -196,108 +196,107 @@ class resetTokens{
 ----
 **/api/auth/signUp**
 
-Method|Body|Success|Error
------ |------|---------|-------
-POST| *{<br>firstName,<br>lastName,<br>email,<br>password<br>}* | 201: *{<br>code:201,<br>type:'success',<br>message:'Successfully registered'<br>}* | 422: *{<br>code,<br>type,<br>message<br>}*
+| Method | Body                                                      | Success                                                                            | Error                                      |
+|--------|-----------------------------------------------------------|------------------------------------------------------------------------------------|--------------------------------------------|
+| POST   | *{<br>firstName,<br>lastName,<br>email,<br>password<br>}* | 201: *{<br>code:201,<br>type:'success',<br>message:'Successfully registered'<br>}* | 422: *{<br>code,<br>type,<br>message<br>}* |
 
 ----
 **/api/auth**
 
-Method|Body|Success|Error
-------|-----|------|-----
-POST|*{<br>email,<br>password<br>}* | 200: *{<br>jwt,<br>session<br>}* | 401: *{<br>message<br>}*
+| Method | Body                           | Success                          | Error                    |
+|--------|--------------------------------|----------------------------------|--------------------------|
+| POST   | *{<br>email,<br>password<br>}* | 200: *{<br>jwt,<br>session<br>}* | 401: *{<br>message<br>}* |
 
 ----
 **/api/email**
 
-Method | Body | Success | Error
--------|------|---------|------
-POST | *{<br>email<br>}* | 200: *{<br>code:200,<br>type:'success',<br>message:'Email sent successfully'<br>}* | 404,500: *{<br>code,<br>type,<br>message<br>}*
+| Method | Body              | Success                                                                            | Error                                          |
+|--------|-------------------|------------------------------------------------------------------------------------|------------------------------------------------|
+| POST   | *{<br>email<br>}* | 200: *{<br>code:200,<br>type:'success',<br>message:'Email sent successfully'<br>}* | 404,500: *{<br>code,<br>type,<br>message<br>}* |
 
 ----
 **/api/email/check**
 
-Method | Body | Success | Error
----------|----|---------|------
-POST | *{<br>email,<br>token<br>}* | 200: *{<br>error:false,<br>message:'Provide new password',<br>id:userId<br>}* | 404,401: *{<br>error,<br>message<br>}*
+| Method | Body                        | Success                                                                       | Error                                  |
+|--------|-----------------------------|-------------------------------------------------------------------------------|----------------------------------------|
+| POST   | *{<br>email,<br>token<br>}* | 200: *{<br>error:false,<br>message:'Provide new password',<br>id:userId<br>}* | 404,401: *{<br>error,<br>message<br>}* |
 
 ----
 **/api/email/reset**
 
-Method | Body | Success | Error
---------|-----|---------|------
-POST | *{<br>id,<br>password<br>}* | 200: *{<br>type:'success',<br>message:'Password was reset'<br>}* | 500: *{<br>type:'error',<br>message:'Error while resetting the password'<br>}*
+| Method | Body                        | Success                                                          | Error                                                                          |
+|--------|-----------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| POST   | *{<br>id,<br>password<br>}* | 200: *{<br>type:'success',<br>message:'Password was reset'<br>}* | 500: *{<br>type:'error',<br>message:'Error while resetting the password'<br>}* |
 
 ---
 **/api/diary**
 
-Method | Body | Success | Error
--------|------|-----------|----
-GET | None | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body | Success                                    | Error                                      |
+|--------|------|--------------------------------------------|--------------------------------------------|
+| GET    | None | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/diary/add**
 
-Method | Body | Success | Error
----------|------|-------|------
-POST | *{<br>diary,<br>userId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                         | Success                                    | Error                                      |
+|--------|------------------------------|--------------------------------------------|--------------------------------------------|
+| POST   | *{<br>diary,<br>userId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/diary/modify**
 
-Method | Body | Success | Error
---------|------|--------|------
-PATCH | *{<br>userId,<br>diaryId,<br>diary<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}* 
+| Method | Body                                     | Success                                    | Error                                      |
+|--------|------------------------------------------|--------------------------------------------|--------------------------------------------|
+| PATCH  | *{<br>userId,<br>diaryId,<br>diary<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/diary/delete**
 
-Method | Body | Success | Error
--------|------|---------|------
-DELETE | *{<br>userId,<br>diaryId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                           | Success                                    | Error                                      |
+|--------|--------------------------------|--------------------------------------------|--------------------------------------------|
+| DELETE | *{<br>userId,<br>diaryId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 500: *{<br>data,<br>type,<br>message<br>}* |
 
 -----
 **/api/record**
 
-Method | Body | Success | Error
-------|-------|---------|------
-POST | *{<br>diaryId,<br>userId,<br>analysis<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500 : *{<br>data,<br>type,<br>message<br>}* 
+| Method | Body                                        | Success                                    | Error                                           |
+|--------|---------------------------------------------|--------------------------------------------|-------------------------------------------------|
+| POST   | *{<br>diaryId,<br>userId,<br>analysis<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500 : *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/record/single**
 
-Method | Body | Success | Error
-------|-------|---------|------
-POST | *{<br>userId,<br>diaryId,<br>recordId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                                        | Success                                    | Error                                          |
+|--------|---------------------------------------------|--------------------------------------------|------------------------------------------------|
+| POST   | *{<br>userId,<br>diaryId,<br>recordId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/record/add**
 
-Method | Body | Success | Error
-------|-------|---------|------
-POST | *{<br>userId,<br>diaryId,<br>bodyAreas,<br>frontImage,<br>backImage,<br>dates<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                                                                                | Success                                    | Error                                          |
+|--------|-------------------------------------------------------------------------------------|--------------------------------------------|------------------------------------------------|
+| POST   | *{<br>userId,<br>diaryId,<br>bodyAreas,<br>frontImage,<br>backImage,<br>dates<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/record/edit**
 
-Method | Body | Success | Error
-------|-------|---------|------
-PATCH | *{<br>userId,<br>diaryId,<br>record,<br>bodyAreas,<br>frontImage,<br>backImage<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                                                                                 | Success                                    | Error                                          |
+|--------|--------------------------------------------------------------------------------------|--------------------------------------------|------------------------------------------------|
+| PATCH  | *{<br>userId,<br>diaryId,<br>record,<br>bodyAreas,<br>frontImage,<br>backImage<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/record/editTime**
 
-Method | Body | Success | Error
-------|-------|---------|------
-PATCH | *{<br>userId,<br>recordId,<br>diaryId,<br>newStartDate,<br>newEndDate,<br>newAllDay<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}*
+| Method | Body                                                                                      | Success                                    | Error                                          |
+|--------|-------------------------------------------------------------------------------------------|--------------------------------------------|------------------------------------------------|
+| PATCH  | *{<br>userId,<br>recordId,<br>diaryId,<br>newStartDate,<br>newEndDate,<br>newAllDay<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* |
 
 ----
 **/api/record/delete**
 
-Method | Body | Success | Error
-------|-------|---------|------
-DELETE | *{<br>recordId,<br>userId,<br>diaryId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* 
-
+| Method | Body                                        | Success                                    | Error                                          |
+|--------|---------------------------------------------|--------------------------------------------|------------------------------------------------|
+| DELETE | *{<br>recordId,<br>userId,<br>diaryId<br>}* | 200: *{<br>data,<br>type,<br>message<br>}* | 401,500: *{<br>data,<br>type,<br>message<br>}* |
 
 # Installation
 

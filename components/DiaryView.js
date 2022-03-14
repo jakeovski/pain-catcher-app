@@ -234,6 +234,7 @@ const DiaryView = ({pid, session}) => {
         } else {
             let tempEvents = [];
             let recordDateRange = [];
+            let newPreview =null;
             for (const record of data.data.records) {
                 tempEvents.push({
                     id: record._id,
@@ -249,10 +250,16 @@ const DiaryView = ({pid, session}) => {
                         }
                     }
                 }
+                if(recordPreview){
+                    if (record._id === recordPreview._id){
+                        newPreview = record;
+                    }
+                }
             }
             setRecordsWithinDateRange(recordDateRange);
             setEvents(tempEvents);
             setRecordsData(data.data.records);
+            setRecordPreview(newPreview);
             setButtonLoading(false);
             setCalendarEditable(true);
         }
