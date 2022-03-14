@@ -1,7 +1,7 @@
 {
   "name": "pain-catcher-app",
   "private": true,
-  "version": "1.0.0-aplha4",
+  "version": "1.0.0-alpha5",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
