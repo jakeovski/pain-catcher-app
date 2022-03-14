@@ -14,7 +14,7 @@ const editTime = async (req, res) => {
 
     try {
         const {userId, recordId, diaryId, newStartDate, newEndDate, newAllDay} = req.body;
-        const session = await getSession(res);
+        const session = await getSession({req});
 
         if (userId !== session.user.id) {
             return res.status(401).json({

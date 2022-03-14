@@ -17,11 +17,10 @@ const addRecord = async (req, res) => {
             message: 'Only POST method is allowed'
         });
     }
-    console.log(req.body);
 
     try {
         const {userId, diaryId, record, bodyAreas, frontImage, backImage, dates} = req.body;
-        const session = await getSession(res);
+        const session = await getSession({req});
 
         if (userId !== session.user.id) {
             return res.status(401).json({

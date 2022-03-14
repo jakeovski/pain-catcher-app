@@ -15,7 +15,7 @@ const deleteRecord = async (req, res) => {
 
     try {
         const {recordId, userId, diaryId} = req.body;
-        const session = await getSession(res);
+        const session = await getSession({req});
 
         if (userId !== session.user.id) {
             return res.status(401).json({

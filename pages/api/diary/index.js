@@ -4,7 +4,7 @@ import Diary from "../../../models/Diary";
 
 
 const getDiaries = async (req, res) => {
-    const session = await getSession(res);
+    const session = await getSession({req});
 
     try {
         await Connection();

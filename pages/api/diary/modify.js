@@ -13,7 +13,7 @@ const modify = async (req, res) => {
     }
     try {
         const {userId, diaryId, diary} = req.body;
-        const session = await getSession(res);
+        const session = await getSession({req});
 
         if (userId !== session.user.id) {
             return res.status(401).json({
