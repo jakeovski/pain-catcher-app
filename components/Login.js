@@ -166,7 +166,7 @@ const Login = ({darkState}) => {
      */
     const handleChange = (e) => {
         setFormData({
-            ...formData, [e.target.name]: e.target.value
+            ...formData, [e.target.name]: e.target.value.trim()
         });
     }
 

@@ -24,7 +24,7 @@ const RecordPreview = ({
             content.push(<HeartBrokenIcon color="primary" key={i}/>);
         }
         if (recordPreview.painLevel === 0) {
-            content.push(<FavoriteIcon color="secondary"/>)
+            content.push(<FavoriteIcon color="secondary" key={0}/>)
         }
         return content;
     }

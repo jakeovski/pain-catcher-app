@@ -43,11 +43,10 @@ const getRecords = async (req, res) => {
 
         const records = await Record.find({
             diaryId: diaryId
-        }).select('-backBodyImage -frontBodyImage');
+        }).select('-backBodyImage -frontBodyImage').sort({recordStartDate:1});
 
         if (analysis) {
             const analysis = analysisCalculation(records);
-            console.log(analysis);
             return res.status(200).json({
                 data: {
                     diary: diary,
@@ -232,7 +231,6 @@ const analysisCalculation = (records) => {
     for (const area of uniqueAreas) {
         area.average = Math.round((area.painLevel / area.count + Number.EPSILON) * 100) / 100;
     }
-    console.log(uniqueAreas);
 
     uniqueAreas.sort(compareAreaAverage);
 
@@ -242,7 +240,7 @@ const analysisCalculation = (records) => {
         avgPainLevel: {
             lastWeek: averageValueLastWeek,
             thisWeek: averageValueThisWeek,
-            percentage: percentage,
+            percentage: percentage ? percentage : 0,
             thisWeekColor: percentage < 0 ? '#87A878' : '#F95B3D',
             lastWeekColor: averageValueLastWeek < 3 ? averageValueLastWeek < 2 ? '#87A878' : '#BFA616' : '#F95B3D'
         },
@@ -266,19 +264,19 @@ const analysisCalculation = (records) => {
         },
         avgPainLevelByArea: {
             area1: {
-                name: areaResult[0] ? areaResult[0].name : '',
-                average: areaResult[0] ? areaResult[0].average : null,
-                color: areaResult[0] ? areaResult[0].average < 3 ? areaResult[0].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : null,
+                name: areaResult[0] ? areaResult[0].name : 'None',
+                average: areaResult[0] ? areaResult[0].average : 0,
+                color: areaResult[0] ? areaResult[0].average < 3 ? areaResult[0].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : '#4F7CAC',
             },
             area2: {
-                name: areaResult[1] ? areaResult[1].name : '',
-                average: areaResult[1] ? areaResult[1].average : null,
-                color: areaResult[1] ? areaResult[1].average < 3 ? areaResult[1].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : null,
+                name: areaResult[1] ? areaResult[1].name : 'None',
+                average: areaResult[1] ? areaResult[1].average : 0,
+                color: areaResult[1] ? areaResult[1].average < 3 ? areaResult[1].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : '#4F7CAC',
             },
             area3: {
-                name: areaResult[2] ? areaResult[2].name : '',
-                average: areaResult[2] ? areaResult[2].average : null,
-                color: areaResult[2] ? areaResult[2].average < 3 ? areaResult[2].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : null
+                name: areaResult[2] ? areaResult[2].name : 'None',
+                average: areaResult[2] ? areaResult[2].average : 0,
+                color: areaResult[2] ? areaResult[2].average < 3 ? areaResult[2].average < 2 ? '#87A878' : '#BFA616' : '#F95B3D' : '#4F7CAC'
             }
         }
     }

@@ -1,5 +1,16 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Button, CircularProgress, Grid, IconButton, List, Paper, Typography, useTheme} from "@mui/material";
+import {
+    Alert,
+    Button,
+    CircularProgress,
+    Grid,
+    IconButton,
+    List,
+    Pagination,
+    Paper,
+    Typography,
+    useTheme
+} from "@mui/material";
 import {useRouter} from "next/router";
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FullCalendar from '@fullcalendar/react'
@@ -7,7 +18,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import luxon2Plugin from '@fullcalendar/luxon2';
-import {DateTime} from "luxon";
+import {DateTime, Interval} from "luxon";
 import RecordPreview from "../helper/RecordPreview";
 import CustomDialog from "../helper/CustomDialog";
 import {LoadingButton} from "@mui/lab";
@@ -42,6 +53,8 @@ const DiaryView = ({pid, session}) => {
     const [dialogTitleText, setDialogTitleText] = useState(null);
     const [dialogContentText, setDialogContentText] = useState(null);
     const calendarRef = React.useRef(null);
+    const [page,setPage] = useState(1);
+    const [pageWithinDateRange,setPageWithinDateRange] = useState(1);
 
     //Actions
     const handleGoBack = async () => {
@@ -84,6 +97,7 @@ const DiaryView = ({pid, session}) => {
             }
             setRecordsWithinDateRange(recordDateRange);
         }
+        setErrorMessage({type:'',message: ''});
         setRecordPreview(null);
     }
 
@@ -95,6 +109,7 @@ const DiaryView = ({pid, session}) => {
             endStr: null,
             allDay: null
         });
+        setErrorMessage({type:'',message: ''});
         setRecordsWithinDateRange([]);
         calendarRef.current.getApi().unselect();
     }
@@ -104,12 +119,11 @@ const DiaryView = ({pid, session}) => {
         if (recordPreview) {
             await router.push(`/diary/${pid}/${recordPreview._id}`);
         } else {
-            console.log(recordsData.length);
             if (recordsData.length > 0) {
                 const alreadyExists = recordsData.find((element) => {
-                    return DateTime.fromISO(element.recordStartDate).equals(selectedDates.startDate);
+                    return checkDatesOverlap(element._id,null,element.recordStartDate,
+                        element.recordEndDate,selectedDates.startDate,selectedDates.endDate);
                 });
-                console.log(alreadyExists);
                 if (alreadyExists) {
                     setErrorMessage({
                         type: 'warning',
@@ -125,6 +139,33 @@ const DiaryView = ({pid, session}) => {
                 await router.push(`/diary/${pid}/new`);
             }
         }
+    }
+
+    const showRecords = (recordsToShow,number) => {
+        const records = []
+        let count = 0;
+
+        for (let i = number - 1; i < recordsToShow.length; i++){
+            records.push(
+                <Button size="small" onClick={handleRecordPreview(recordsToShow[i])}
+                        fullWidth
+                        sx={{marginBottom: 1}}
+                        variant="outlined" key={recordsToShow[i]._id}>
+                    {`${recordsToShow[i].title} on ${DateTime.fromISO(recordsToShow[i].recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(recordsToShow[i].recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
+                </Button>
+            )
+            count++;
+            if (count === 10) break;
+        }
+        return records;
+    }
+
+    const handlePagination = (e,value) => {
+        setPage(value);
+    }
+
+    const handlePaginationWithinDateRange = (e,value) => {
+        setPageWithinDateRange(value);
     }
 
     const handleDeleteDialogClose = () => {
@@ -210,6 +251,24 @@ const DiaryView = ({pid, session}) => {
                 endDate = DateTime.fromISO(info.event.startStr).plus({hours: 1});
             }
         }
+        if (recordsData.length > 0) {
+            const alreadyExists = recordsData.find((element) => {
+                return checkDatesOverlap(element._id,
+                    info.event.id,element.recordStartDate,
+                    element.recordEndDate,info.event.start,
+                    endDate ? endDate : DateTime.fromISO(info.event.endStr));
+            });
+            if (alreadyExists) {
+                setErrorMessage({
+                    type: 'warning',
+                    message: 'There is already a record for that time'
+                })
+                info.revert();
+                setButtonLoading(false);
+                setCalendarEditable(true);
+                return;
+            }
+        }
         const res = await fetch('/api/record/editTime', {
             method: 'PATCH',
             headers: {
@@ -262,6 +321,37 @@ const DiaryView = ({pid, session}) => {
             setRecordPreview(newPreview);
             setButtonLoading(false);
             setCalendarEditable(true);
+        }
+    }
+
+    /*
+    Checks whether a moved event is allowed to be moved
+     */
+    const checkDatesOverlap = (existingId, currentId,existingStart,existingEnd, newStartDate, newEndDate) => {
+        //If we are looking at the same event we are moving we should allow the move
+        if (existingId !== currentId) {
+            /*
+            Assume the event we are moving is a bigger event, create an interval from the event we are moving and check whether any events fall under our interval
+            If yes, then the event cannot be moved as overlaps
+            If no, go to next check
+             */
+            const bigInterval = Interval.fromDateTimes(newStartDate,newEndDate);
+            const notAllowed = bigInterval.contains(DateTime.fromISO(existingStart)) || bigInterval.contains(DateTime.fromISO(existingEnd).minus({seconds:1}));
+
+            /**
+             * Next check. Now we assume the event we are moving is a smaller event. Create an interval from other events and check whether the event
+             * we are moving is in any of the other event intervals
+             * If yes, the move is not allowed as overlaps other events
+             * If no, the event we are moving does not overlap any other events
+             */
+            if(!notAllowed) {
+                const smallInterval = Interval.fromDateTimes(DateTime.fromISO(existingStart),DateTime.fromISO(existingEnd));
+                return smallInterval.contains(newStartDate) || smallInterval.contains(newEndDate.minus({seconds:1}));
+            }else {
+                return notAllowed;
+            }
+        }else {
+            return false;
         }
     }
 
@@ -421,30 +511,41 @@ const DiaryView = ({pid, session}) => {
                                         :
                                         selectedDates.startDate ?
                                             recordsWithinDateRange.length !== 0 ?
+                                                <>
                                                 <List>
-                                                    {recordsWithinDateRange.map((data) => {
-                                                        return <Button onClick={handleRecordPreview(data)}
-                                                                       size="small"
-                                                                       fullWidth
-                                                                       sx={{marginBottom: 1}}
-                                                                       variant="outlined" key={data._id}
-                                                        >{`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
-                                                        </Button>
-                                                    })}
+                                                    {/*{recordsWithinDateRange.map((data) => {*/}
+                                                    {/*    return <Button onClick={handleRecordPreview(data)}*/}
+                                                    {/*                   size="small"*/}
+                                                    {/*                   fullWidth*/}
+                                                    {/*                   sx={{marginBottom: 1}}*/}
+                                                    {/*                   variant="outlined" key={data._id}*/}
+                                                    {/*    >{`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}*/}
+                                                    {/*    </Button>*/}
+                                                    {/*})}*/}
+                                                    {
+                                                        showRecords(recordsWithinDateRange,pageWithinDateRange)
+                                                    }
                                                 </List>
+                                                <Pagination sx={{display:'flex',justifyContent:'center'}} color="primary"
+                                                            count={Math.ceil(recordsWithinDateRange.length / 10)}
+                                                            page={pageWithinDateRange}
+                                                            onChange={handlePaginationWithinDateRange}/>
+                                                </>
                                                 :
                                                 <Alert severity="info">No Records exist for the date range</Alert>
                                             :
+                                            <>
                                             <List>
-                                                {recordsData.map((data) => {
-                                                    return <Button size="small" onClick={handleRecordPreview(data)}
-                                                                   fullWidth
-                                                                   sx={{marginBottom: 1}}
-                                                                   variant="outlined" key={data._id}>
-                                                        {`${data.title} on ${DateTime.fromISO(data.recordStartDate).toFormat('dd/LL/yyyy HH:mm')} - ${DateTime.fromISO(data.recordEndDate).toFormat('dd/LL/yyyy HH:mm')}`}
-                                                    </Button>
-                                                })}
+                                                {
+                                                    showRecords(recordsData,page)
+                                                }
                                             </List>
+                                                <Pagination sx={{display:'flex',justifyContent:'center'}} color="primary"
+                                                            count={Math.ceil(recordsData.length / 10)}
+                                                            page={page}
+                                                            onChange={handlePagination}/>
+                                            </>
+
                                     :
                                     <Alert severity="info">No Records exist yet</Alert>
                                 }
