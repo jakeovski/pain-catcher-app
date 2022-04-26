@@ -145,7 +145,7 @@ const DiaryView = ({pid, session}) => {
         const records = []
         let count = 0;
 
-        for (let i = number - 1; i < recordsToShow.length; i++){
+        for (let i = (number * 10) - 10; i < recordsToShow.length; i++){
             records.push(
                 <Button size="small" onClick={handleRecordPreview(recordsToShow[i])}
                         fullWidth
@@ -155,7 +155,7 @@ const DiaryView = ({pid, session}) => {
                 </Button>
             )
             count++;
-            if (count === 10) break;
+            if (count === 9) break;
         }
         return records;
     }

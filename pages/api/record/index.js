@@ -91,10 +91,10 @@ const analysisCalculation = (records) => {
     let thisWeekCount = 0;
 
     //Average by time
-    const twelveAm = DateTime.fromFormat('00:00', 'HH:mm');
-    const sixAm = DateTime.fromFormat('06:00', 'HH:mm');
-    const twelvePm = DateTime.fromFormat('12:00', 'HH:mm');
-    const sixPm = DateTime.fromFormat('18:00', 'HH:mm');
+    const twelveAm = 24;
+    const sixAm = 6;
+    const twelvePm = 12;
+    const sixPm = 18;
     let averagePainTwelveAmToSixAm = 0;
     let averagePainSixAmToTwelvePm = 0;
     let averagePainTwelvePmToSixPm = 0;
@@ -125,20 +125,21 @@ const analysisCalculation = (records) => {
             thisWeekCount++;
         }
         //Average Pain by Time
-        if (DateTime.fromISO(record.recordStartDate).startOf('hour') >= twelveAm &&
-            DateTime.fromISO(record.recordEndDate).startOf('hour') <= sixAm) {
+        // console.log(DateTime.fromJSDate(record.recordStartDate).startOf('hour'));
+        if (DateTime.fromJSDate(record.recordStartDate).get('hour') >= twelveAm &&
+            DateTime.fromJSDate(record.recordEndDate).get('hour') <= sixAm) {
             averagePainTwelveAmToSixAm += record.painLevel;
             averagePainTwelveAmToSixAmCount++;
-        } else if (DateTime.fromISO(record.recordStartDate).startOf('hour') >= sixAm &&
-            DateTime.fromISO(record.recordEndDate).startOf('hour') <= twelvePm) {
+        } else if (DateTime.fromJSDate(record.recordStartDate).get('hour') >= sixAm &&
+            DateTime.fromJSDate(record.recordEndDate).get('hour') <= twelvePm) {
             averagePainSixAmToTwelvePm += record.painLevel;
             averagePainSixAmToTwelvePmCount++;
-        } else if (DateTime.fromISO(record.recordStartDate).startOf('hour') >= twelvePm &&
-            DateTime.fromISO(record.recordEndDate).startOf('hour') <= sixPm) {
+        } else if (DateTime.fromJSDate(record.recordStartDate).get('hour') >= twelvePm &&
+            DateTime.fromJSDate(record.recordEndDate).get('hour') <= sixPm) {
             averagePainTwelvePmToSixPm += record.painLevel;
             averagePainTwelvePmToSixPmCount++;
-        } else if (DateTime.fromISO(record.recordStartDate).startOf('hour') >= sixPm &&
-            DateTime.fromISO(record.recordEndDate).startOf('hour') <= twelveAm) {
+        } else if (DateTime.fromJSDate(record.recordStartDate).get('hour') >= sixPm &&
+            DateTime.fromJSDate(record.recordEndDate).get('hour') <= twelveAm) {
             averagePainSixPmToTwelveAm += record.painLevel;
             averagePainSixPmToTwelveAmCount++;
         } else {
@@ -240,18 +241,18 @@ const analysisCalculation = (records) => {
         avgPainLevel: {
             lastWeek: averageValueLastWeek,
             thisWeek: averageValueThisWeek,
-            percentage: percentage ? percentage : 0,
+            percentage: percentage && percentage !== Infinity ? percentage : 0,
             thisWeekColor: percentage < 0 ? '#87A878' : '#F95B3D',
             lastWeekColor: averageValueLastWeek < 3 ? averageValueLastWeek < 2 ? '#87A878' : '#BFA616' : '#F95B3D'
         },
         avgPainLevelByTime: {
-            averagePainTwelveAmToSixAm: averagePainTwelveAmToSixAm,
+            averagePainTwelveAmToSixAm: averagePainTwelveAmToSixAm ? averagePainTwelveAmToSixAm : 0,
             averagePainTwelveAmToSixAmColor: averagePainTwelveAmToSixAm < 3 ? averagePainTwelveAmToSixAm < 2 ? '#87A878' : '#BFA616' : '#F95B3D',
-            averagePainSixAmToTwelvePm: averagePainSixAmToTwelvePm,
+            averagePainSixAmToTwelvePm: averagePainSixAmToTwelvePm ? averagePainSixAmToTwelvePm : 0,
             averagePainSixAmToTwelvePmColor: averagePainSixAmToTwelvePm < 3 ? averagePainSixAmToTwelvePm < 2 ? '#87A878' : '#BFA616' : '#F95B3D',
-            averagePainTwelvePmToSixPm: averagePainTwelvePmToSixPm,
+            averagePainTwelvePmToSixPm: averagePainTwelvePmToSixPm ? averagePainTwelvePmToSixPm : 0,
             averagePainTwelvePmToSixPmColor: averagePainTwelvePmToSixPm < 3 ? averagePainTwelvePmToSixPm < 2 ? '#87A878' : '#BFA616' : '#F95B3D',
-            averagePainSixPmToTwelveAm: averagePainSixPmToTwelveAm,
+            averagePainSixPmToTwelveAm: averagePainSixPmToTwelveAm ? averagePainSixPmToTwelveAm : 0,
             averagePainSixPmToTwelveAmColor: averagePainSixPmToTwelveAm < 3 ? averagePainSixPmToTwelveAm < 2 ? '#87A878' : '#BFA616' : '#F95B3D',
         },
         avgPainLevelBySleep: {
